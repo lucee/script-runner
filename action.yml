@@ -18,5 +18,5 @@ runs:
   steps:
     - run: |
         pwd
-        ant -verbose -DluceeVersion="${{ inputs.luceeVersion }}" -Dwebroot="${{ inputs.webroot }}" -Dexecute="${{ inputs.execute }}" -Dlucee.extensions="${{ inputs.extensions }}"
+        ant -buildfile ${{ github.action_path }}/build.xml -verbose -DluceeVersion="${{ inputs.luceeVersion }}" -Dwebroot="${{ inputs.webroot }}" -Dexecute="${{ inputs.execute }}" -Dlucee.extensions="${{ inputs.extensions }}"
       shell: bash
