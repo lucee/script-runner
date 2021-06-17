@@ -18,5 +18,6 @@ runs:
   steps:
     - run: |
         pwd
+        echo Hello ${{ inputs.luceeVersion }}
         ant -buildfile ${{ github.action_path }}/build.xml -verbose -DluceeVersion="${{ inputs.luceeVersion }}" -Dwebroot="${{ inputs.webroot }}" -Dexecute="${{ inputs.execute }}" -Dlucee.extensions="${{ inputs.extensions }}"
       shell: bash
