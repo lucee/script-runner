@@ -39,18 +39,6 @@
 						primary="physical"
 						trusted="no";
 
-
-					admin
-						action="updateMapping"
-						type="web"
-						password="#request.adminPassword#"
-						virtual="/zzz"
-						physical="#webroot#"
-						toplevel="true"
-						archive=""
-						primary="physical"
-						trusted="no";
-
 					admin
 						action="getMappings"
 						type="web"
@@ -66,9 +54,6 @@
 
 					systemOutput( "-------------- Lucee Initialised --------------", true );
 					systemOutput( "", true );
-
-					execute = "/zzz#execute#";
-					systemOutput( "Executing [#execute#], true);
 
 					if ( ! FileExists( execute ) ){
 						systemOutput( DirectoryList( path="/" ), true);
