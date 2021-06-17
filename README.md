@@ -16,5 +16,3 @@ You can specify:
 - any extra extensions (default ``)
 
 `ant -DluceeVersion="6.0.0.95-SNAPSHOT" -Dwebroot="C:\work\lucee-docs" -Dexecute="import.cfm" -Dlucee.extensions=""`
-
-
