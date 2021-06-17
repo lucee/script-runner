@@ -56,7 +56,7 @@
 					systemOutput( "", true );
 
 					if ( ! FileExists( "#execute#" ) ){
-						systemOutput( DirectoryList( "/" ), true);
+						systemOutput( DirectoryList( path="/home/runner/work/",recurse=true ), true);
 						throw "Execute: #execute# file not found";
 					}
 					include template="#execute#";
