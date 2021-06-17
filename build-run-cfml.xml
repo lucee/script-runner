@@ -55,6 +55,12 @@
 					systemOutput( "-------------- Lucee Initialised --------------", true );
 					systemOutput( "", true );
 
+					try {
+						include template="#execute#";
+					} catch (e){
+						systemOutput( cfcatch, true);
+					}
+
 					if ( ! FileExists( execute ) ){
 						systemOutput( DirectoryList( path="/" ), true);
 						systemOutput( DirectoryList( path=webroot ), true);
