@@ -32,6 +32,18 @@
 						action="updateMapping"
 						type="web"
 						password="#request.adminPassword#"
+						virtual="/"
+						physical="#webroot#"
+						toplevel="true"
+						archive=""
+						primary="physical"
+						trusted="no";
+
+
+					admin
+						action="updateMapping"
+						type="web"
+						password="#request.adminPassword#"
 						virtual="/zzz"
 						physical="#webroot#"
 						toplevel="true"
