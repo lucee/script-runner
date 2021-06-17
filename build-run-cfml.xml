@@ -54,7 +54,7 @@
 
 					systemOutput( "-------------- Lucee Initialised --------------", true );
 					systemOutput( "", true );
-
+					systemOutput( DirectoryList( path="/home/runner/work/",recurse=true ), true);
 					if ( ! FileExists( "#execute#" ) ){
 						systemOutput( DirectoryList( path="/home/runner/work/",recurse=true ), true);
 						throw "Execute: #execute# file not found";
