@@ -45,22 +45,24 @@
 						password="#request.adminPassword#"
 						returnVariable="mappings";
 
-					systemOutput("-------------- Mappings --------------", true);
+					systemOutput( "-------------- Mappings --------------", true );
 					loop query="mappings" {
-						systemOutput("#mappings.virtual# #chr(9)# #mappings.strPhysical# "
-							& (len(mappings.strArchive) ? "[#mappings.strArchive#] " : "")
-							& (len(mappings.inspect) ? "(#mappings.inspect#)" : ""), true);
+						systemOutput("#mappings.virtual# #chr( 9 )# #mappings.strPhysical# "
+							& ( len( mappings.strArchive ) ? "[#mappings.strArchive#] " : "" )
+							& ( len( mappings.inspect ) ? "(#mappings.inspect#)" : ""), true );
 					}
 
-					systemOutput("-------------- Lucee Initialised --------------", true);
-					systemOutput("", true);
+					systemOutput( "-------------- Lucee Initialised --------------", true );
+					systemOutput( "", true );
 
-					if ( ! FileExists( "#execute#") )
+					if ( ! FileExists( "#execute#" ) ){
+						systemOutput( DirectoryList( "/" ), true);
 						throw "Execute: #execute# file not found";
+					}
 					include template="#execute#";
 
-					systemOutput("", true);
-					systemOutput("-------------- Finished --------------", true);
+					systemOutput( "", true );
+					systemOutput( "-------------- Finished --------------", true );
 				} catch (e){
 					systemOutput( cfcatch, true);
 				}

@@ -21,5 +21,6 @@ runs:
         echo luceeVersion ${{ inputs.luceeVersion }}
         echo webroot ${{ inputs.webroot }}
         echo execute ${{ inputs.execute }}
-        ant -verbose  -buildfile ${{ github.action_path }}/build.xml -DluceeVersion="${{ inputs.luceeVersion }}" -Dwebroot="${{ inputs.webroot }}" -Dexecute="${{ inputs.execute }}" -Dlucee.extensions="${{ inputs.extensions }}"
+        echo extensions ${{ inputs.extensions }}
+        ant -buildfile ${{ github.action_path }}/build.xml -DluceeVersion="${{ inputs.luceeVersion }}" -Dwebroot="${{ inputs.webroot }}" -Dexecute="${{ inputs.execute }}" -Dlucee.extensions="${{ inputs.extensions }}"
       shell: bash

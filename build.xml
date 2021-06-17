@@ -72,6 +72,8 @@
 		</java>
 		<echo>${errorOut}</echo>
 		<echo message="Finished!" />
+		<!--
 		<delete dir="${temp}"/>
+		-->
 	</target>
 </project>
