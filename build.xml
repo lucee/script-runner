@@ -65,6 +65,7 @@
 			<jvmarg value="-Dwebroot=${webroot}"/>
 			<jvmarg value="-Dexecute=${execute}"/>
 			<jvmarg value="-Dlucee.extensions=${extensions}"/>
+			<jvmarg value="-Dlucee.mapping.first=true"/>
 			<!--
 			<jvmarg value="-Xdebug"/>
 			<jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5000"/>
