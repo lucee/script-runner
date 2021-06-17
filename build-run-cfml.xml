@@ -32,7 +32,7 @@
 						action="updateMapping"
 						type="web"
 						password="#request.adminPassword#"
-						virtual="/"
+						virtual="/zzz"
 						physical="#webroot#"
 						toplevel="true"
 						archive=""
@@ -55,7 +55,8 @@
 					systemOutput( "-------------- Lucee Initialised --------------", true );
 					systemOutput( "", true );
 
-					_internalRequest(execute);
+					execute = "/zzz#execute#";
+					systemOutput( "Executing [#execute#], true);
 
 					if ( ! FileExists( execute ) ){
 						systemOutput( DirectoryList( path="/" ), true);
@@ -63,7 +64,7 @@
 						//systemOutput( ExpandPath( execute ) ), true);
 						throw "Execute: [#execute#] file not found";
 					} else {
-
+						include template="#execute#";
 					}
 
 					systemOutput( "", true );
