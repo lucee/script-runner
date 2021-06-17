@@ -2,23 +2,23 @@ name: 'Lucee Script Runner'
 description: 'Run Lucee via the command line'
 inputs:
   luceeVersion:
-    description: 'Lucee Version to run'
+    description: Lucee Version to run
     required: true
   webroot:
-    description: 'cfml webroot'
+    description: cfml webroot
     required: true
   execute:
-    description: 'cfml script to execute'
+    description: cfml script to execute
     required: true
   extensions:
-    description: 'any additional extensions to install'
+    description: any additional extensions to install
     required: true
 runs:
   using: "composite"
   steps:
     - run: |
         pwd
-        echo Hello ${{ inputs.luceeVersion }}
-        echo Hello ${{ inputs.webroot }}
-        echo Hello ${{ inputs.execute }}
+        echo luceeVersion ${{ inputs.luceeVersion }}
+        echo webroot ${{ inputs.webroot }}
+        echo execute ${{ inputs.execute }}
       shell: bash
