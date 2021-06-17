@@ -16,5 +16,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - run: ant -DluceeVersion="${{ inputs.luceeVersion }}" -Dwebroot="${{ inputs.webroot }}" -Dexecute="${{ inputs.execute }}" -Dlucee.extensions="${{ inputs.extensions }}"
+    - run: |
+        pwd
+        ant -verbose -DluceeVersion="${{ inputs.luceeVersion }}" -Dwebroot="${{ inputs.webroot }}" -Dexecute="${{ inputs.execute }}" -Dlucee.extensions="${{ inputs.extensions }}"
       shell: bash
