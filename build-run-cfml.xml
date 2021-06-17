@@ -55,13 +55,15 @@
 					systemOutput( "-------------- Lucee Initialised --------------", true );
 					systemOutput( "", true );
 
+					_internalRequest(execute);
+
 					if ( ! FileExists( execute ) ){
 						systemOutput( DirectoryList( path="/" ), true);
 						systemOutput( DirectoryList( path=webroot ), true);
 						//systemOutput( ExpandPath( execute ) ), true);
 						throw "Execute: [#execute#] file not found";
 					} else {
-						include template="#execute#";
+
 					}
 
 					systemOutput( "", true );
