@@ -54,13 +54,15 @@
 
 					systemOutput( "-------------- Lucee Initialised --------------", true );
 					systemOutput( "", true );
+					systemOutput( "Running [#execute#]", true);
+					systemOutput( "", true );
 
 					try {
 						include template="#execute#";
 					} catch (e){
 						systemOutput( cfcatch, true);
 					}
-
+					/*
 					if ( ! FileExists( execute ) ){
 						systemOutput( DirectoryList( path="/" ), true);
 						systemOutput( DirectoryList( path=webroot ), true);
@@ -69,6 +71,7 @@
 					} else {
 						include template="#execute#";
 					}
+					*/
 
 					systemOutput( "", true );
 					systemOutput( "-------------- Finished --------------", true );
