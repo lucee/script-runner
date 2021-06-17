@@ -1,0 +1,8 @@
+{
+    "workbench.colorCustomizations": {
+        "activityBar.background": "#1B246F",
+        "titleBar.activeBackground": "#26339B",
+        "titleBar.activeForeground": "#F9FAFE"
+    },
+    "files.trimTrailingWhitespace": true
+}

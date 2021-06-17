@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project default="core" basedir="." name="Lucee"
+	xmlns:artifact="antlib:org.apache.maven.artifact.ant">
+
+	<path id="maven-ant-tasks.classpath" path="ant/lib/maven-ant-tasks-2.1.3.jar" />
+	<typedef resource="org/apache/maven/artifact/ant/antlib.xml" uri="antlib:org.apache.maven.artifact.ant" classpathref="maven-ant-tasks.classpath" />
+
+	<property name="cache" location="lucee-download-cache"/>
+	<property name="temp" location="temp"/>
+	<property name="ant" location="${rootDir}/ant"/>
+	<property name="webroot" location="sample"/>
+	<property name="execute" value="/index.cfm"/>
+	<property name="extensions" value=""/>
+
+	<property name="luceeCdnUrl" value="https://cdn.lucee.org"/>
+	<property name="luceeVersion" value="5.3.8.184-SNAPSHOT"/>
+
+	<!--<target name="core" depends="setEnv,check-lucee-jar,check-lucee-lco,download-lucee-jar,download-lucee-lco,run-cfml">-->
+	<target name="core" depends="setEnv,check-lucee-jar,download-lucee-jar,run-cfml">
+	</target>
+
+	<target name="setEnv">
+		<artifact:pom id="pom" file="pom.xml"/>
+		<artifact:dependencies filesetId="mydeps" pomRefId="pom" />
+		<pathconvert property="dependencies" refid="mydeps"/>
+		<property name="runtime_classpath" value="${java.class.path}:${dependencies}"/>
+	</target>
+
+	<target name="check-lucee-jar">
+		<available file="${cache}/lucee-${luceeVersion}.jar" property="lucee.jar.present"/>
+	</target>
+
+	<target name="check-lucee-lco">
+		<available file="${cache}/${luceeVersion}.lco" property="lucee.lco.present"/>
+	</target>
+
+	<target name="download-lucee-jar" unless="lucee.jar.present">
+		<mkdir dir="${cache}"/>
+		<get src="${luceeCdnUrl}/lucee-${luceeVersion}.jar" dest="${cache}/lucee-${luceeVersion}.jar"/>
+	</target>
+
+	<target name="download-lucee-lco" unless="lucee.lco.present">
+		<mkdir dir="${cache}"/>
+		<get src="${luceeCdnUrl}/${luceeVersion}.lco" dest="${cache}/${luceeVersion}.lco"/>
+	</target>
+
+	<target name="run-cfml">
+		<echo message="Java: ${java.version}, ${java.home}" />
+    	<echo message="Lucee: ${luceeVersion}" />
+		<echo message="Webroot: ${webroot}" />
+		<echo message="Execute: ${execute}" />
+		<echo message="" />
+		<!-- execute CFML testcases -->
+		<mkdir dir="${temp}/lucee"/>
+		<mkdir dir="${temp}/lucee/web"/>
+		<java classname="org.apache.tools.ant.launch.Launcher" dir="${temp}/lucee" fork="true" failonerror="true" errorproperty="errorOut">
+			<classpath path="${java.class.path}">
+				<pathelement location="${cache}/lucee-${luceeVersion}.jar"/>
+				<pathelement path="${runtime_classpath}"/>
+			</classpath>
+			<arg value="-f"/>
+			<arg value="../../build-run-cfml.xml"/>
+			<jvmarg value="-Dlucee.base.dir=${temp}/lucee"/>
+			<jvmarg value="-Dlucee.web.dir=${temp}/lucee/web"/>
+			<jvmarg value="-Dwebroot=${webroot}"/>
+			<jvmarg value="-Dexecute=${execute}"/>
+			<jvmarg value="-Dlucee.extensions=${extensions}"/>
+			<!--
+			<jvmarg value="-Xdebug"/>
+			<jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5000"/>
+			-->
+		</java>
+		<echo>${errorOut}</echo>
+		<echo message="Finished!" />
+		<delete dir="${temp}"/>
+	</target>
+</project>

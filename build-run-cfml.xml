@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project default="all" basedir="." name="run-cfml">
+	<macrodef name="echots">
+		<attribute name="message"/>
+		<sequential>
+			<local name="timestamp" />
+			<tstamp>
+				<format property="timestamp" pattern="yyyy-MM-dd HH:mm:ss" />
+			</tstamp>
+			<echo message="---------- ${timestamp} - @{message} ----------" />
+		</sequential>
+	</macrodef>
+	<target name="all">
+		<echots message="Lucee Starting"/>
+		<script language="CFML">
+		<![CDATA[
+				systemOutput( "---------- #DateTimeFormat(now(),'yyyy-mm-dd HH:nn:ss')# - Lucee Started ----------", true);
+				systemOutput( "#server.lucee.version#", true );
+
+				request.adminPassword="admin";
+
+				try {
+
+					admin
+						action="updatePassword"
+						type="web"
+						oldPassword=""
+						newPassword="#request.adminPassword#";
+					systemOutput( "set web admin password #dateTimeFormat(now())#", true );
+
+					admin
+						action="updateMapping"
+						type="web"
+						password="#request.adminPassword#"
+						virtual="/"
+						physical="#webroot#"
+						toplevel="true"
+						archive=""
+						primary="physical"
+						trusted="no";
+
+					admin
+						action="getMappings"
+						type="web"
+						password="#request.adminPassword#"
+						returnVariable="mappings";
+
+					systemOutput("-------------- Mappings --------------", true);
+					loop query="mappings" {
+						systemOutput("#mappings.virtual# #chr(9)# #mappings.strPhysical# "
+							& (len(mappings.strArchive) ? "[#mappings.strArchive#] " : "")
+							& (len(mappings.inspect) ? "(#mappings.inspect#)" : ""), true);
+					}
+
+					systemOutput("-------------- Lucee Initialised --------------", true);
+					systemOutput("", true);
+
+					if ( ! FileExists( "#execute#") )
+						throw "Execute: #execute# file not found";
+					include template="#execute#";
+
+					systemOutput("", true);
+					systemOutput("-------------- Finished --------------", true);
+				} catch (e){
+					systemOutput( cfcatch, true);
+				}
+		]]>
+		</script>
+		<echots message="Lucee Stopping"/>
+	</target>
+</project>
