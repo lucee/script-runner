@@ -2,19 +2,25 @@ name: 'Lucee Script Runner'
 description: 'Run Lucee via the command line'
 inputs:
   luceeVersion:
-    description: 'Lucee Version to run'
+    description: Lucee Version to run
     required: true
   webroot:
-    description: 'cfml webroot'
+    description: cfml webroot
     required: true
   execute:
-    description: 'cfml script to execute'
+    description: cfml script to execute
     required: true
   extensions:
-    description: 'any additional extensions to install'
+    description: any additional extensions to install
     required: true
 runs:
   using: "composite"
   steps:
-    - run: ant -DluceeVersion="${{ inputs.luceeVersion }}" -Dwebroot="${{ inputs.webroot }}" -Dexecute="${{ inputs.execute }}" -Dlucee.extensions="${{ inputs.extensions }}"
+    - run: |
+        pwd
+        echo luceeVersion ${{ inputs.luceeVersion }}
+        echo webroot ${{ inputs.webroot }}
+        echo execute ${{ inputs.execute }}
+        echo extensions ${{ inputs.extensions }}
+        ant -buildfile ${{ github.action_path }}/build.xml -DluceeVersion="${{ inputs.luceeVersion }}" -Dwebroot="${{ inputs.webroot }}" -Dexecute="${{ inputs.execute }}" -Dlucee.extensions="${{ inputs.extensions }}"
       shell: bash
