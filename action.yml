@@ -13,6 +13,9 @@ inputs:
   extensions:
     description: any additional extensions to install
     required: true
+  extensionDir:
+    description: a directory containing any Lucee *.lex extentions to manually install
+    required: true
 runs:
   using: "composite"
   steps:
@@ -22,5 +25,6 @@ runs:
         echo webroot ${{ inputs.webroot }}
         echo execute ${{ inputs.execute }}
         echo extensions ${{ inputs.extensions }}
-        ant -buildfile ${{ github.action_path }}/build.xml -DluceeVersion="${{ inputs.luceeVersion }}" -Dwebroot="${{ inputs.webroot }}" -Dexecute="${{ inputs.execute }}" -Dlucee.extensions="${{ inputs.extensions }}"
+        echo extensionDir ${{ inputs.extensionDir }}
+        ant -buildfile ${{ github.action_path }}/build.xml -DluceeVersion="${{ inputs.luceeVersion }}" -Dwebroot="${{ inputs.webroot }}" -Dexecute="${{ inputs.execute }}" -Dlucee.extensions="${{ inputs.extensions }}" -DextensionDir="${{ inputs.extensionDir }}"
       shell: bash
