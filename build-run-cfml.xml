@@ -64,7 +64,6 @@
 					if ( len( extensionDir)  ){
 						systemOutput( "-------------- Extensions --------------", true );
 						deployExtensions = DirectoryList( path=extensionDir, filter="*.lex" );
-						systemOutput(deployExtensions, true);
 						loop array="#deployExtensions#" item="lexFile" {
 							SystemOutput("Manually installing extension [#lexFile#]", true);
 							FileCopy( lexFile, getTempDirectory() ); // make a copy, so lucee doesn't delete it after installing
@@ -75,7 +74,7 @@
 								source="#getTempDirectory()##ListLast( lexFile, "\/")#";
 						}
 						if ( ArrayLen( deployExtensions ) eq 0)
-							SystemOutput( "No *.lex extension files found in directory [#extensionDir#] ", true );
+							SystemOutput( "No *.lex extension files found in directory [#extensionDir#], directory exists: [#DirectoryExists(extensionDir)#]", true );
 					}
 
 
