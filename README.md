@@ -10,9 +10,12 @@ Default `ant` will run the `sample/index.cfm` file
 
 You can specify:
 
-- Lucee version  (default `5.3.8.184-SNAPSHOT` )
-- Webroot  (default `tests/`)
-- File to run (default `index.cfm`)
-- any extra extensions (default ``)
+- Lucee version `-DluceeVersion=` (default `5.3.8.184-SNAPSHOT` )
+- Webroot `-Dwebroot=`  (default `tests/`)
+- File to run, `-Dexecute=` (default `index.cfm`)
+- any extra extensions `-Dextensions=` (default ``)
+- manual extension install from a directory `-DextensionDir=` (default ``)
 
 `ant -DluceeVersion="6.0.0.95-SNAPSHOT" -Dwebroot="C:\work\lucee-docs" -Dexecute="import.cfm" -Dlucee.extensions=""`
+
+`ant -DluceeVersion="6.0.0.95-SNAPSHOT" -DextensionDir="C:\work\lucee-extensions\extension-hibernate\dist"`

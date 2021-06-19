@@ -26,7 +26,15 @@
 						type="web"
 						oldPassword=""
 						newPassword="#request.adminPassword#";
-					systemOutput( "set web admin password #dateTimeFormat(now())#", true );
+					systemOutput( "Set Web admin password", true );
+					/*
+					admin
+						action="updatePassword"
+						type="server"
+						oldPassword=""
+						newPassword="#request.adminPassword#";
+					systemOutput( "Set Server admin password", true );
+					*/
 
 					admin
 						action="updateMapping"
@@ -52,7 +60,26 @@
 							& ( len( mappings.inspect ) ? "(#mappings.inspect#)" : ""), true );
 					}
 
-					systemOutput( "-------------- Lucee Initialised --------------", true );
+					param name="extensionDir" default="";
+					if ( len( extensionDir)  ){
+						systemOutput( "-------------- Extensions --------------", true );
+						deployExtensions = DirectoryList( path=extensionDir, filter="*.lex" );
+						systemOutput(deployExtensions, true);
+						loop array="#deployExtensions#" item="lexFile" {
+							SystemOutput("Manually installing extension [#lexFile#]", true);
+							FileCopy( lexFile, getTempDirectory() ); // make a copy, so lucee doesn't delete it after installing
+							admin
+								action="updateRHExtension"
+								type="web"
+								password="#request.adminPassword#"
+								source="#getTempDirectory()##ListLast( lexFile, "\/")#";
+						}
+						if ( ArrayLen( deployExtensions ) eq 0)
+							SystemOutput( "No *.lex extension files found in directory [#extensionDir#] ", true );
+					}
+
+
+					systemOutput( "-------------- Lucee Initialized --------------", true );
 					systemOutput( "", true );
 					systemOutput( "Running [#execute#]", true);
 					systemOutput( "", true );
