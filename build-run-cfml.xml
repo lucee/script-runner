@@ -103,6 +103,7 @@
 					systemOutput( "-------------- Finished --------------", true );
 				} catch (e){
 					systemOutput( cfcatch, true);
+					rethrow;
 				}
 		]]>
 		</script>
