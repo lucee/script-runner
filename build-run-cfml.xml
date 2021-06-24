@@ -18,6 +18,7 @@
 				systemOutput( "#server.lucee.version#", true );
 
 				request.adminPassword="admin";
+				request.errorThrown = false;
 
 				try {
 
@@ -86,7 +87,9 @@
 					try {
 						include template="#execute#";
 					} catch (e){
+						request.errorThrown = true;
 						systemOutput( cfcatch, true);
+						rethrow;
 					}
 					/*
 					if ( ! FileExists( execute ) ){
@@ -102,7 +105,8 @@
 					systemOutput( "", true );
 					systemOutput( "-------------- Finished --------------", true );
 				} catch (e){
-					systemOutput( cfcatch, true);
+					if ( !request.errorThrown )
+						systemOutput( cfcatch, true);
 					rethrow;
 				}
 		]]>
