@@ -2,7 +2,7 @@
 
 A simple js-223 script runner for Lucee cfml
 
-[![CI](https://github.com/zspitzer/lucee-script-engine-runner/actions/workflows/main.yml/badge.svg)](https://github.com/zspitzer/lucee-script-engine-runner/actions/workflows/main.yml)
+[![CI](https://github.com/lucee/script-runner/actions/workflows/main.yml/badge.svg)](https://github.com/lucee/script-runner/actions/workflows/main.yml)
 
 ## Usage
 
@@ -12,7 +12,7 @@ Default `ant` will run the `sample/index.cfm` file
 
 You can specify:
 
-- Lucee version `-DluceeVersion=` (default `5.3.8.184-SNAPSHOT` )
+- Lucee version `-DluceeVersion=` (default `5.3.8.189` )
 - Webroot `-Dwebroot=`  (default `tests/`)
 - File to run, `-Dexecute=` (default `index.cfm`)
 - any extra extensions `-Dextensions=` (default ``)
