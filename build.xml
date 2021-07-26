@@ -55,6 +55,8 @@
 
 		<echo message="" />
 		<!-- execute CFML testcases -->
+		<delete dir="${temp}"/>
+		<mkdir dir="${temp}"/>
 		<mkdir dir="${temp}/lucee"/>
 		<mkdir dir="${temp}/lucee/web"/>
 		<mkdir dir="${temp}/lucee/lucee-server/context"/>
