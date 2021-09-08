@@ -4,6 +4,8 @@ A simple js-223 script runner for Lucee cfml
 
 [![CI](https://github.com/lucee/script-runner/actions/workflows/main.yml/badge.svg)](https://github.com/lucee/script-runner/actions/workflows/main.yml)
 
+Please report any issues, etc in the [Lucee Issue Tracker](https://luceeserver.atlassian.net/)
+
 ## Command line Usage
 
 Default `ant` will run the `sample/index.cfm` file
