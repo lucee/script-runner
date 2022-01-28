@@ -15,7 +15,7 @@
 	<property name="extensionDir" value=""/>
 
 	<property name="luceeCdnUrl" value="https://cdn.lucee.org"/>
-	<property name="luceeVersion" value="5.3.8.189"/>
+	<property name="luceeVersion" value="5.3.8.206"/>
 
 	<!--<target name="core" depends="setEnv,check-lucee-jar,check-lucee-lco,download-lucee-jar,download-lucee-lco,run-cfml">-->
 	<target name="core" depends="setEnv,check-lucee-jar,download-lucee-jar,run-cfml">
@@ -48,10 +48,11 @@
 
 	<target name="run-cfml">
 		<echo message="Java: ${java.version}, ${java.home}" />
-    	<echo message="Lucee: ${luceeVersion}" />
+		<echo message="Lucee: ${luceeVersion}" />
 		<echo message="Webroot: ${webroot}" />
 		<echo message="Execute: ${execute}" />
 		<echo message="ExtensionDir: ${extensionDir}" />
+		<echo message="Extensions: ${extensions}" />
 
 		<echo message="" />
 		<!-- execute CFML testcases -->
@@ -82,6 +83,11 @@
 			<!--
 			<jvmarg value="-Xdebug"/>
 			<jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"/>
+			<jvmarg value="-Djava.net.useSystemProxies=true"/>
+			<jvmarg value="-Dhttps.proxyHost=127.0.0.1"/>
+			<jvmarg value="-Dhttps.proxyPort=8188"/>
+			<jvmarg value="-Dhttp.proxyHost=127.0.0.1"/>
+			<jvmarg value="-Dhttp.proxyPort=8188"/>
 			-->
 		</java>
 		<echo>${errorOut}</echo>
