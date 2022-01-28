@@ -4,5 +4,8 @@
         "titleBar.activeBackground": "#26339B",
         "titleBar.activeForeground": "#F9FAFE"
     },
-    "files.trimTrailingWhitespace": true
+    "files.trimTrailingWhitespace": true,
+    "files.watcherExclude": {
+        "**/temp/**": true
+    }
 }
