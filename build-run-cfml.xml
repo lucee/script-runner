@@ -28,14 +28,12 @@
 						oldPassword=""
 						newPassword="#request.adminPassword#";
 					systemOutput( "Set Web admin password", true );
-					/*
 					admin
 						action="updatePassword"
 						type="server"
 						oldPassword=""
 						newPassword="#request.adminPassword#";
 					systemOutput( "Set Server admin password", true );
-					*/
 
 					admin
 						action="updateMapping"
