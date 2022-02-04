@@ -68,7 +68,7 @@
 							FileCopy( lexFile, getTempDirectory() ); // make a copy, so lucee doesn't delete it after installing
 							admin
 								action="updateRHExtension"
-								type="web"
+								type="server"
 								password="#request.adminPassword#"
 								source="#getTempDirectory()##ListLast( lexFile, "\/")#";
 						}
