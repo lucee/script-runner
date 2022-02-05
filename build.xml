@@ -14,6 +14,9 @@
 	<!-- allow installing extensions from a directory, i.e. extension dist dir -->
 	<property name="extensionDir" value=""/>
 
+	<!-- scripts can be run as an include, or via internalRequest (default) which picks up any Application.cfc -->
+	<property name="executeScriptByInclude" value=""/>
+
 	<property name="luceeCdnUrl" value="https://cdn.lucee.org"/>
 	<property name="luceeVersion" value="5.3.8.206"/>
 
@@ -53,6 +56,7 @@
 		<echo message="Execute: ${execute}" />
 		<echo message="ExtensionDir: ${extensionDir}" />
 		<echo message="Extensions: ${extensions}" />
+		<echo message="executeScriptByInclude: ${executeScriptByInclude}" />
 
 		<echo message="" />
 		<!-- execute CFML testcases -->
@@ -77,6 +81,7 @@
 			<jvmarg value="-Dlucee.web.dir=${temp}/lucee/web"/>
 			<jvmarg value="-Dwebroot=${webroot}"/>
 			<jvmarg value="-Dexecute=${execute}"/>
+			<jvmarg value="-DexecuteScriptByInclude=${executeScriptByInclude}"/>
 			<jvmarg value="-DextensionDir=${extensionDir}"/>
 			<jvmarg value="-Dlucee.extensions=${extensions}"/>
 			<jvmarg value="-Dlucee.mapping.first=true"/>

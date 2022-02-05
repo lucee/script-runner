@@ -14,19 +14,26 @@ Default `ant` will run the `sample/index.cfm` file
 
 You can specify:
 
-- Lucee version `-DluceeVersion=` (default `5.3.8.189` )
+- Lucee version `-DluceeVersion=` (default `5.3.8.206` )
 - Webroot `-Dwebroot=`  (default `tests/`)
-- File to run, `-Dexecute=` (default `index.cfm`)
+- CFML Script to run, `-Dexecute=` (default `index.cfm`)
+- run script via include or _internalRequest (which runs the Application.cfc if present, default ) `-DexecuteScriptByInclude="true"`
 - any extra extensions `-Dextensions=` (default ``)
-- manual extension install from a directory `-DextensionDir=` (default ``)
+- manual extension install (`*.lex`) from a directory `-DextensionDir=` (default ``)
 
 `ant -DluceeVersion="6.0.0.95-SNAPSHOT" -Dwebroot="C:\work\lucee-docs" -Dexecute="import.cfm" -Dlucee.extensions=""`
 
 `ant -DluceeVersion="6.0.0.95-SNAPSHOT" -DextensionDir="C:\work\lucee-extensions\extension-hibernate\dist"`
 
+If no webroot is specfied, you can run the provided debug script, to see which extensions are available and all the env / sys properties
+
+`ant -buildfile="C:\work\script-runner" -Dexecute="/debug.cfm"`
+
+`ant -buildfile="C:\work\script-runner" -Dexecute="/debug.cfm" -DluceeVersion="light-6.0.0.95-SNAPSHOT"`  (`light` has no bundled extensions)
+
 ## As a GitHub Action
 
-To use as a GitHub Action, to run the PDF tests after building the PDF Extension, just add the following yaml 
+To use as a GitHub Action, to run the PDF tests after building the PDF Extension, just add the following yaml
 
 ```
     - name: Checkout Lucee

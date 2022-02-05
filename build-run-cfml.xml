@@ -95,8 +95,14 @@
 					systemOutput( "Running [#execute#]", true);
 					systemOutput( "", true );
 
+					param name="executeScriptByInclude" default="false";
+					systemOutput("executeScriptByInclude: #executeScriptByInclude#", true );
 					try {
-						include template="#execute#";
+						if ( executeScriptByInclude eq "true"){
+							include template="#execute#"; // the lucee build script assumes it is running as an include
+						} else {
+							_internalRequest( execute ); // using internal request runs the application.cfc, but won't pass any variables
+						}
 					} catch (e){
 						request.errorThrown = true;
 						systemOutput( cfcatch, true);
