@@ -23,3 +23,6 @@ jobs:
 
       - name: Run Lucee 6
         run: ant -DluceeVersion="6.0.0.95-SNAPSHOT" -Dexecute="/debug.cfm"
+      
+      - name: Run Lucee 6 (using Lucee light, no extensions)
+        run: ant -DluceeVersion="light-6.0.0.95-SNAPSHOT" -Dexecute="/debug.cfm"
