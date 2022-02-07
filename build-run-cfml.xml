@@ -95,8 +95,23 @@
 					systemOutput( "Running [#execute#]", true);
 					systemOutput( "", true );
 
+					param name="executeScriptByInclude" default="false";
+
 					try {
-						include template="#execute#";
+						if ( executeScriptByInclude eq "true"){
+							include template="#execute#";
+						} else {
+							passedVariables = {};
+							loop collection=#variables# key="key" value="value" {
+								if ( isSimpleValue( value ) )
+									passedVariables[ key ] = value;
+							}
+
+							_internalRequest(
+								template = execute,
+								url = passedVariables
+							 ); // using internal request runs the Application.cfc, pass any simple variables in as URLs
+						}
 					} catch (e){
 						request.errorThrown = true;
 						systemOutput( cfcatch, true);
