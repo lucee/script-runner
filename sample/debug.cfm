@@ -1,6 +1,12 @@
 <cfscript>
 	systemOutput("Hello World, Lucee Script Engine Runner, Debugger", true);
 	systemOutput("#getCurrentTemplatePath()#", true);
+
+	systemoutput("--------- variables -------", true);
+	loop collection=#variables# key="key" value="value"{
+		systemoutput("#key#=#serializeJson(value)#", true);
+	}
+
 	systemoutput("--------- System properties (lucee.*) -------", true);
 	for ( p in server.system.properties ){
 		if ( listFirst( p, "." ) eq "lucee" ){
@@ -27,4 +33,5 @@
 	loop query="q_ext"{
 		systemoutput("#q_ext.name#, #q_ext.version#", true);
 	}
+
 </cfscript>

@@ -96,12 +96,21 @@
 					systemOutput( "", true );
 
 					param name="executeScriptByInclude" default="false";
-					systemOutput("executeScriptByInclude: #executeScriptByInclude#", true );
+
 					try {
 						if ( executeScriptByInclude eq "true"){
-							include template="#execute#"; // the lucee build script assumes it is running as an include
+							include template="#execute#";
 						} else {
-							_internalRequest( execute ); // using internal request runs the application.cfc, but won't pass any variables
+							passedVariables = {};
+							loop collection=#variables# key="key" value="value" {
+								if ( isSimpleValue( value ) )
+									passedVariables[ key ] = value;
+							}
+
+							_internalRequest(
+								template = execute,
+								url = passedVariables
+							 ); // using internal request runs the Application.cfc, pass any simple variables in as URLs
 						}
 					} catch (e){
 						request.errorThrown = true;
