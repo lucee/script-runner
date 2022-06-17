@@ -61,3 +61,28 @@ This will do the following steps
 - install any extension(s) (`*.lex`) found in `${{ github.workspace }}/dist`
 - run all tests with the label of "pdf"
 - run any additional tests found in the `/tests` directory of the current repository
+
+## As a BitBucket Pipeline
+
+```
+image: atlassian/default-image:3
+
+pipelines:
+  default:
+    - step:
+        name: Build and Test
+        caches:
+          - maven
+        script:
+          - ant -noinput -verbose -buildfile build.xml
+        artifacts:
+          - dist/**
+    - step:
+        name: Checkout Lucee Script-runner, Lucee and run tests
+        script:
+          - git clone https://github.com/lucee/script-runner
+          - git clone https://github.com/lucee/lucee
+          - export testLabels="PDF"
+          - echo $testLabels
+          - ant -buildfile script-runner/build.xml -DluceeVersion="light-6.0.0.152-SNAPSHOT" -Dwebroot="$BITBUCKET_CLONE_DIR/lucee/test" -DextensionDir="$BITBUCKET_CLONE_DIR/dist" -Dexecute="/bootstrap-tests.cfm" -DtestAdditional="$BITBUCKET_CLONE_DIR/tests"
+```
