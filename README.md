@@ -4,7 +4,7 @@ A simple js-223 script runner for Lucee cfml
 
 [![CI](https://github.com/lucee/script-runner/actions/workflows/main.yml/badge.svg)](https://github.com/lucee/script-runner/actions/workflows/main.yml)
 
-Please report any issues, etc in the [Lucee Issue Tracker](https://luceeserver.atlassian.net/)
+Please report any issues, etc in the [Lucee Issue Tracker](https://luceeserver.atlassian.net/issues/?jql=labels%20%3D%20%22script-runner%22)
 
 ## Command line Usage
 
