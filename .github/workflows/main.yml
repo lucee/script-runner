@@ -22,7 +22,10 @@ jobs:
         run: ant
 
       - name: Run Lucee 6
-        run: ant -DluceeVersion="6.0.0.278-SNAPSHOT" -Dexecute="/debug.cfm"
+        run: ant -DluceeVersion="6.0.0.492-SNAPSHOT" -Dexecute="/debug.cfm"
 
       - name: Run Lucee 6 (using Lucee light, no extensions)
-        run: ant -DluceeVersion="light-6.0.0.278-SNAPSHOT" -Dexecute="/debug.cfm"
+        run: ant -DluceeVersion="light-6.0.0.492-SNAPSHOT" -Dexecute="/debug.cfm"
+
+      - name: Run Lucee 6 (using Lucee zero, no extensions, no admin, no docs)
+        run: ant -DluceeVersion="zero-6.0.0.492-SNAPSHOT" -Dexecute="/debug.cfm"

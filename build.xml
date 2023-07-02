@@ -18,7 +18,7 @@
 	<property name="executeScriptByInclude" value=""/>
 
 	<property name="luceeCdnUrl" value="https://cdn.lucee.org"/>
-	<property name="luceeVersion" value="5.3.9.166"/>
+	<property name="luceeVersion" value="5.4.0.80"/>
 
 	<!--<target name="core" depends="setEnv,check-lucee-jar,check-lucee-lco,download-lucee-jar,download-lucee-lco,run-cfml">-->
 	<target name="core" depends="setEnv,check-lucee-jar,download-lucee-jar,run-cfml">
