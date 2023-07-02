@@ -27,10 +27,8 @@ jobs:
       - name: Cache Lucee files
         uses: actions/cache@v3
         with:
-          path: _actions/lucee/script-runner/main/lucee-download-cache
+          path: ~/work/script-runner/script-runner/lucee-download-cache/
           key: lucee-downloads
-          restore-keys: |
-            lucee-downloads
 
       - name: Run default
         run: ant
