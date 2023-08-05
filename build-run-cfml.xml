@@ -74,19 +74,22 @@
 
 					param name="extensionDir" default="";
 					if ( len( extensionDir)  ){
-						systemOutput( "-------------- Extensions --------------", true );
-						deployExtensions = DirectoryList( path=extensionDir, filter="*.lex" );
-						loop array="#deployExtensions#" item="lexFile" {
-							SystemOutput("Manually installing extension [#lexFile#]", true);
-							FileCopy( lexFile, getTempDirectory() ); // make a copy, so lucee doesn't delete it after installing
-							admin
-								action="updateRHExtension"
-								type="server"
-								password="#request.adminPassword#"
-								source="#getTempDirectory()##ListLast( lexFile, "\/")#";
+						function reportExtensions() localmode=true {
+							systemOutput( "-------------- Extensions --------------", true );
+							deployExtensions = DirectoryList( path=extensionDir, filter="*.lex" );
+							loop array="#deployExtensions#" item="lexFile" {
+								SystemOutput("Manually installing extension [#lexFile#]", true);
+								FileCopy( lexFile, getTempDirectory() ); // make a copy, so lucee doesn't delete it after installing
+								admin
+									action="updateRHExtension"
+									type="server"
+									password="#request.adminPassword#"
+									source="#getTempDirectory()##ListLast( lexFile, "\/")#";
+							}
+							if ( ArrayLen( deployExtensions ) eq 0)
+								SystemOutput( "No *.lex extension files found in directory [#extensionDir#], directory exists: [#DirectoryExists(extensionDir)#]", true );
 						}
-						if ( ArrayLen( deployExtensions ) eq 0)
-							SystemOutput( "No *.lex extension files found in directory [#extensionDir#], directory exists: [#DirectoryExists(extensionDir)#]", true );
+						reportExtensions();
 					}
 
 
@@ -97,16 +100,71 @@
 
 					param name="executeScriptByInclude" default="false";
 
+					function parseAntParams (str) localmode=true {
+						loopGuard=0;
+						pos = findNoCase(" -D", str);
+						params = {};
+						do {
+							vStart = findNoCase('"', str, pos+1 );
+							if (vStart gt 0){
+								name = mid(str, pos+3, (vStart-pos-4));
+								vEnd = findNoCase('"', str, vStart+1);
+								if (vEnd  gt 0){
+									val = mid(str, vStart+1, vEnd-vStart-1);
+									pos = vEnd+1;
+									params[ name ]=val;
+								}
+							} else {
+								pos = 0; // bail
+							}
+							if (pos gt 0) {
+								pos = findNoCase(" -D", str, pos );
+								loopGuard++;
+							}
+							if (loopGuard gt 100)
+								throw "Error Loop protection @ #loopGuard#";
+						} while ( pos > 0);
+						return params;
+					}
+
+
+					function loadPassedVariables() localmode=true {
+
+						var params =  parseAntParams( server.system.environment.ANT_CMD_LINE_ARGS?: "" );
+						StructAppend(params, variables);
+						var passedVariables = {};
+						loop collection=#params# key="key" value="value" {
+							if ( isSimpleValue( value ) )
+								passedVariables[ key ] = value;
+						}
+						if ( structcount( passedVariables ) ) {
+							systemOutput( "", true );
+							systemOutput( "Variables", true);
+							loop collection=passedVariables key="_k" value="_v" {
+								systemOutput( chr(9) & _k & ": "  & _v , true);
+							}
+							systemOutput( "", true );
+						}
+						return passedVariables;
+					}
+
+					passedVariables = loadPassedVariables();
+
+					if ( compile eq "true" ){
+						systemOutput( "-------------- Start Compiling Webroot --------------", true );
+						admin
+							action="compileMapping"
+							type="web"
+							password=#request.adminPassword#
+							virtual="/"
+							stoponerror="false";
+						systemOutput( "-------------- Finished Compiling Webroot --------------", true );
+					}
+
 					try {
 						if ( executeScriptByInclude eq "true"){
 							include template="#execute#";
 						} else {
-							passedVariables = {};
-							loop collection=#variables# key="key" value="value" {
-								if ( isSimpleValue( value ) )
-									passedVariables[ key ] = value;
-							}
-
 							_internalRequest(
 								template = execute,
 								url = passedVariables
