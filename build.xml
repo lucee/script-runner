@@ -13,15 +13,18 @@
 	<property name="extensions" value=""/>
 	<!-- allow installing extensions from a directory, i.e. extension dist dir -->
 	<property name="extensionDir" value=""/>
+	<property name="compile" value=""/>
 
 	<!-- scripts can be run as an include, or via internalRequest (default) which picks up any Application.cfc -->
 	<property name="executeScriptByInclude" value=""/>
 
 	<property name="luceeCdnUrl" value="https://cdn.lucee.org"/>
-	<property name="luceeVersion" value="5.4.0.80"/>
+	<property name="luceeUpdateProvider" value="https://update.lucee.org/rest/update/provider/latest/"/>
+	<property name="luceeVersion" value="5.4.2.17"/>
+	<property name="luceeVersionQuery" value=""/> <!-- i.e. 5.4/stable/jar -->
 
 	<!--<target name="core" depends="setEnv,check-lucee-jar,check-lucee-lco,download-lucee-jar,download-lucee-lco,run-cfml">-->
-	<target name="core" depends="setEnv,check-lucee-jar,download-lucee-jar,run-cfml">
+	<target name="core" depends="setEnv,use-version,query-version,check-lucee-jar,download-lucee-jar,run-cfml">
 	</target>
 
 	<target name="setEnv">
@@ -29,29 +32,46 @@
 		<artifact:dependencies filesetId="mydeps" pomRefId="pom" />
 		<pathconvert property="dependencies" refid="mydeps"/>
 		<property name="runtime_classpath" value="${java.class.path}:${dependencies}"/>
+		<echo message="${luceeVersionQuery}"/>
+		<condition property="no-query-version">
+			<length string="${luceeVersionQuery}" trim="true" length="0"/>
+		</condition>
+	</target>
+
+	<target name="use-version" if="no-query-version">
+		<property name="useLuceeVersion" value="${luceeVersion}"/>
+		<property name="luceeVersionUrl" value="${luceeCdnUrl}/lucee-${useLuceeVersion}.jar"/>
+		<property name="luceeFilename" value="lucee-${useLuceeVersion}.jar"/>
+	</target>
+
+	<target name="query-version" unless="no-query-version">
+		<echo message="Getting latest Lucee version for ${luceeVersionQuery}" />
+		<tempfile property="temp.file" suffix=".txt" prefix="lucee-version-query" deleteonexit="true"/>
+		<get src="${luceeUpdateProvider}${luceeVersionQuery}/filename" dest="${temp.file}" verbose="true"/>
+		<loadfile property="luceeFilename" srcFile="${temp.file}">
+			<filterchain>
+				<tokenfilter>
+					<replaceregex pattern='"' replace="" flags="g"/>
+				</tokenfilter>
+			</filterchain>
+		</loadfile>
+		<property name="luceeVersionUrl" value="${luceeCdnUrl}/${luceeFilename}"/>
+		<property name="useLuceeVersion" value="${luceeFilename}"/>
+		<echo message="Lucee version: ${useLuceeVersion}" />
 	</target>
 
 	<target name="check-lucee-jar">
-		<available file="${cache}/lucee-${luceeVersion}.jar" property="lucee.jar.present"/>
-	</target>
-
-	<target name="check-lucee-lco">
-		<available file="${cache}/${luceeVersion}.lco" property="lucee.lco.present"/>
+		<available file="${cache}/${luceeFilename}" property="lucee.jar.present"/>
 	</target>
 
 	<target name="download-lucee-jar" unless="lucee.jar.present">
 		<mkdir dir="${cache}"/>
-		<get src="${luceeCdnUrl}/lucee-${luceeVersion}.jar" dest="${cache}/lucee-${luceeVersion}.jar"/>
-	</target>
-
-	<target name="download-lucee-lco" unless="lucee.lco.present">
-		<mkdir dir="${cache}"/>
-		<get src="${luceeCdnUrl}/${luceeVersion}.lco" dest="${cache}/${luceeVersion}.lco"/>
+		<get src="${luceeVersionUrl}" dest="${cache}/${luceeFilename}" verbose="true"/>
 	</target>
 
 	<target name="run-cfml">
 		<echo message="Java: ${java.version}, ${java.home}" />
-		<echo message="Lucee: ${luceeVersion}" />
+		<echo message="Lucee: ${useLuceeVersion}" />
 		<echo message="Webroot: ${webroot}" />
 		<echo message="Execute: ${execute}" />
 		<echo message="ExtensionDir: ${extensionDir}" />
@@ -72,7 +92,7 @@
 
 		<java classname="org.apache.tools.ant.launch.Launcher" dir="${temp}/lucee" fork="true" failonerror="true" errorproperty="errorOut">
 			<classpath path="${java.class.path}">
-				<pathelement location="${cache}/lucee-${luceeVersion}.jar"/>
+				<pathelement location="${cache}/${luceeFilename}"/>
 				<pathelement path="${runtime_classpath}"/>
 			</classpath>
 			<arg value="-f"/>
@@ -85,6 +105,8 @@
 			<jvmarg value="-DextensionDir=${extensionDir}"/>
 			<jvmarg value="-Dlucee.extensions=${extensions}"/>
 			<jvmarg value="-Dlucee.mapping.first=true"/>
+			<jvmarg value="-Dcompile=${compile}"/>
+
 			<!--
 			<jvmarg value="-Xdebug"/>
 			<jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"/>
