@@ -44,3 +44,7 @@ jobs:
 
       - name: Run Latest Stable Lucee 5, compile webroot
         run: ant -DluceeVersionQuery="5/stable/jar" -Dexecute="/index.cfm" -Dcompile="true"
+
+      - name: Run Latest Stable Lucee 5, compile webroot (invalid code)
+        continue-on-error: true
+        run: ant -DluceeVersionQuery="5/stable/jar" -Dexecute="/index.cfm" -Dcompile="true" -Dwebroot="${{ github.workspace }}/sampleBad/"
