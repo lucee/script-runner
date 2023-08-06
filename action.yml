@@ -27,18 +27,7 @@ inputs:
     default: ""
 runs:
   using: "composite"
-  steps:
-    - name: Cache Maven packages
-      uses: actions/cache@v3
-      with:
-        path: ~/.m2
-        key: lucee-script-runner-maven-cache
-    - name: Cache Lucee files
-      uses: actions/cache@v3
-      with:
-        path: ${{ github.action_path }}/lucee-download-cache
-        key: lucee-downloads
-        restore-keys: lucee-downloads
+  steps: 
     - if: runner.os != 'Windows'
       run: |
         pwd
