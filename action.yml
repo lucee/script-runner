@@ -37,9 +37,10 @@ runs:
       uses: actions/cache@v3
       with:
         path: ${{ github.action_path }}/lucee-download-cache
-        key: lucee-downloads-${{ env.luceeVersion }}
+        key: lucee-downloads
         restore-keys: lucee-downloads
-    - run: |
+    - if: runner.os != 'Windows'
+      run: |
         pwd
         echo luceeVersion ${{ inputs.luceeVersion }}
         echo luceeVersionQuery ${{ inputs.luceeVersionQuery }}
@@ -52,3 +53,15 @@ runs:
           -Dwebroot="${{ inputs.webroot }}" -Dexecute="${{ inputs.execute }}" \
           -Dextensions="${{ inputs.extensions }}" -DextensionDir="${{ inputs.extensionDir }}" -Dcompile="${{ inputs.compile }}"
       shell: bash
+    - if: runner.os == 'Windows'
+      run: |
+        pwd
+        echo luceeVersion ${{ inputs.luceeVersion }}
+        echo luceeVersionQuery ${{ inputs.luceeVersionQuery }}
+        echo webroot ${{ inputs.webroot }}
+        echo execute ${{ inputs.execute }}
+        echo extensions ${{ inputs.extensions }}
+        echo extensionDir ${{ inputs.extensionDir }}
+        echo compile ${{ inputs.compile }}
+        ant -buildfile "${{ github.action_path }}/build.xml" ${{ inputs.antFlags }} -DluceeVersion="${{ inputs.luceeVersion }}" -DluceeVersionQuery="${{ inputs.luceeVersionQuery }}" -Dwebroot="${{ inputs.webroot }}" -Dexecute="${{ inputs.execute }}" -Dextensions="${{ inputs.extensions }}" -DextensionDir="${{ inputs.extensionDir }}" -Dcompile="${{ inputs.compile }}"
+      shell: cmd
