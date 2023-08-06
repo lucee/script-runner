@@ -43,13 +43,27 @@ To use as a GitHub Action, to run the PDF tests after building the PDF Extension
       with:
         repository: lucee/lucee
         path: lucee
+    - name: Cache Maven packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2
+        key: lucee-script-runner-maven-cache
+    - name: Cache Lucee files
+      uses: actions/cache@v3
+      with:
+        path: _actions/lucee/script-runner/main/lucee-download-cache
+        key: lucee-downloads
     - name: Run Lucee Test Suite
       uses: lucee/script-runner@main
       with:
         webroot: ${{ github.workspace }}/lucee/test
         execute: /bootstrap-tests.cfm
         luceeVersion: ${{ env.luceeVersion }}
+        luceeVersionQuery: 5.4/stable/light (optional, overrides luceeVersion)
+        extensions: (optional list of extension guids to install)
         extensionDir: ${{ github.workspace }}/dist
+        antFlags: -d or -v etc (optional, good for debugging any ant issues)
+        compile: true (optional, compiles all the cfml under the webroot)
       env:
         testLabels: pdf
         testAdditional: ${{ github.workspace }}/tests
