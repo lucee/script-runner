@@ -22,6 +22,9 @@ inputs:
   compile:
     description: compile the cfml code under the webroot
     default: "false"
+  antFlags:
+    description: additional flags to pass to ant
+    default: ""
 runs:
   using: "composite"
   steps:
@@ -45,7 +48,7 @@ runs:
         echo extensions ${{ inputs.extensions }}
         echo extensionDir ${{ inputs.extensionDir }}
         echo compile ${{ inputs.compile }}
-        ant -buildfile "${{ github.action_path }}/build.xml" -DluceeVersion="${{ inputs.luceeVersion }}" -DluceeVersionQuery="${{ inputs.luceeVersionQuery }}" \
+        ant -buildfile "${{ github.action_path }}/build.xml" ${{ inputs.antFlags }} -DluceeVersion="${{ inputs.luceeVersion }}" -DluceeVersionQuery="${{ inputs.luceeVersionQuery }}" \
           -Dwebroot="${{ inputs.webroot }}" -Dexecute="${{ inputs.execute }}" \
           -Dextensions="${{ inputs.extensions }}" -DextensionDir="${{ inputs.extensionDir }}" -Dcompile="${{ inputs.compile }}"
       shell: bash
