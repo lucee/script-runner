@@ -14,12 +14,14 @@ Default `ant` will run the `sample/index.cfm` file
 
 You can specify:
 
-- Lucee version `-DluceeVersion=` (default `5.3.8.206` )
+- Lucee version `-DluceeVersion=` (default `5.4.2.17` )
+- Lucee version by query `-DluceeVersionQuery="5.4/stable/light`
 - Webroot `-Dwebroot=`  (default `tests/`)
-- CFML Script to run, `-Dexecute=` (default `index.cfm`)
+- CFML Script to run, `-Dexecute=` (default `/index.cfm`)
 - run script via include or _internalRequest (which runs the Application.cfc if present, default ) `-DexecuteScriptByInclude="true"`
 - any extra extensions `-Dextensions=` (default ``)
 - manual extension install (`*.lex`) from a directory `-DextensionDir=` (default ``)
+- compile all cfml under webroot `-Dcompile="true"`
 
 `ant -DluceeVersion="6.0.0.95-SNAPSHOT" -Dwebroot="C:\work\lucee-docs" -Dexecute="import.cfm" -Dlucee.extensions=""`
 
@@ -41,13 +43,27 @@ To use as a GitHub Action, to run the PDF tests after building the PDF Extension
       with:
         repository: lucee/lucee
         path: lucee
+    - name: Cache Maven packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2
+        key: lucee-script-runner-maven-cache
+    - name: Cache Lucee files
+      uses: actions/cache@v3
+      with:
+        path: _actions/lucee/script-runner/main/lucee-download-cache
+        key: lucee-downloads
     - name: Run Lucee Test Suite
       uses: lucee/script-runner@main
       with:
         webroot: ${{ github.workspace }}/lucee/test
         execute: /bootstrap-tests.cfm
         luceeVersion: ${{ env.luceeVersion }}
+        luceeVersionQuery: 5.4/stable/light (optional, overrides luceeVersion)
+        extensions: (optional list of extension guids to install)
         extensionDir: ${{ github.workspace }}/dist
+        antFlags: -d or -v etc (optional, good for debugging any ant issues)
+        compile: true (optional, compiles all the cfml under the webroot)
       env:
         testLabels: pdf
         testAdditional: ${{ github.workspace }}/tests

@@ -1,18 +1,12 @@
-# This is a basic workflow to help you get started with Actions
-
 name: CI
 
-# Controls when the action will run.
 on:
   push:
   pull_request:
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
     steps:
@@ -33,11 +27,24 @@ jobs:
       - name: Run default
         run: ant
 
-      - name: Run Lucee 6
-        run: ant -DluceeVersion="6.0.0.492-SNAPSHOT" -Dexecute="/debug.cfm"
+      - name: Run Latest Lucee 6 (via version query)
+        run: ant -DluceeVersionQuery="6/all/jar" -Dexecute="/debug.cfm"
 
-      - name: Run Lucee 6 (using Lucee light, no extensions)
-        run: ant -DluceeVersion="light-6.0.0.492-SNAPSHOT" -Dexecute="/debug.cfm"
+      - name: Run Lucee 6
+        run: ant -DluceeVersion="6.0.0.523-SNAPSHOT" -Dexecute="/debug.cfm"
+
+      - name: Run Lucee 5 (using Lucee light, no extensions)
+        run: ant -DluceeVersion="light-5.4.2.17" -Dexecute="/debug.cfm"
 
       - name: Run Lucee 6 (using Lucee zero, no extensions, no admin, no docs)
-        run: ant -DluceeVersion="zero-6.0.0.492-SNAPSHOT" -Dexecute="/debug.cfm"
+        run: ant -DluceeVersion="zero-6.0.0.523-SNAPSHOT" -Dexecute="/debug.cfm"
+
+      - name: Run Latest Lucee 5 RC Light
+        run: ant -DluceeVersionQuery="5/rc/light" -Dexecute="/debug.cfm"
+
+      - name: Run Latest Stable Lucee 5, compile webroot
+        run: ant -DluceeVersionQuery="5/stable/jar" -Dexecute="/index.cfm" -Dcompile="true"
+
+      - name: Run Latest Stable Lucee 5, compile webroot (invalid code)
+        continue-on-error: true
+        run: ant -DluceeVersionQuery="5/stable/jar" -Dexecute="/index.cfm" -Dcompile="true" -Dwebroot="${{ github.workspace }}/sampleBad/"

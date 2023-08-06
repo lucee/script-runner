@@ -2,8 +2,11 @@ name: 'Lucee Script Runner'
 description: 'Run Lucee via the command line'
 inputs:
   luceeVersion:
-    description: Lucee Version to run
+    description: Lucee Version to run, i.e. "light-5.4.2.17"
     required: true
+  luceeVersionQuery:
+    description: Lucee Version Query to run (overrides luceeVersion, i.e. "5.4/table/light" )
+    default: ""
   webroot:
     description: cfml webroot
     required: true
@@ -12,19 +15,53 @@ inputs:
     required: true
   extensions:
     description: any additional extensions to install
-    required: true
+    default: ""
   extensionDir:
     description: a directory containing any Lucee *.lex extentions to manually install
-    required: true
+    default: ""
+  compile:
+    description: compile the cfml code under the webroot
+    default: "false"
+  antFlags:
+    description: additional flags to pass to ant
+    default: ""
 runs:
   using: "composite"
   steps:
-    - run: |
+    - name: Cache Maven packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2
+        key: lucee-script-runner-maven-cache
+    - name: Cache Lucee files
+      uses: actions/cache@v3
+      with:
+        path: ${{ github.action_path }}/lucee-download-cache
+        key: lucee-downloads
+        restore-keys: lucee-downloads
+    - if: runner.os != 'Windows'
+      run: |
         pwd
         echo luceeVersion ${{ inputs.luceeVersion }}
+        echo luceeVersionQuery ${{ inputs.luceeVersionQuery }}
         echo webroot ${{ inputs.webroot }}
         echo execute ${{ inputs.execute }}
         echo extensions ${{ inputs.extensions }}
         echo extensionDir ${{ inputs.extensionDir }}
-        ant -buildfile "${{ github.action_path }}/build.xml" -DluceeVersion="${{ inputs.luceeVersion }}" -Dwebroot="${{ inputs.webroot }}" -Dexecute="${{ inputs.execute }}" -Dextensions="${{ inputs.extensions }}" -DextensionDir="${{ inputs.extensionDir }}"
+        echo compile ${{ inputs.compile }}
+        ant -buildfile "${{ github.action_path }}/build.xml" ${{ inputs.antFlags }} -DluceeVersion="${{ inputs.luceeVersion }}" -DluceeVersionQuery="${{ inputs.luceeVersionQuery }}" \
+          -Dwebroot="${{ inputs.webroot }}" -Dexecute="${{ inputs.execute }}" \
+          -Dextensions="${{ inputs.extensions }}" -DextensionDir="${{ inputs.extensionDir }}" -Dcompile="${{ inputs.compile }}"
       shell: bash
+    - if: runner.os == 'Windows'
+      run: |
+        pwd
+        echo luceeVersion ${{ inputs.luceeVersion }}
+        echo luceeVersionQuery ${{ inputs.luceeVersionQuery }}
+        echo webroot ${{ inputs.webroot }}
+        echo execute ${{ inputs.execute }}
+        echo extensions ${{ inputs.extensions }}
+        echo extensionDir ${{ inputs.extensionDir }}
+        echo compile ${{ inputs.compile }}
+        ant -buildfile "${{ github.action_path }}/build.xml" ${{ inputs.antFlags }} -DluceeVersion="${{ inputs.luceeVersion }}" -DluceeVersionQuery="${{ inputs.luceeVersionQuery }}" -Dwebroot="${{ inputs.webroot }}" -Dexecute="${{ inputs.execute }}" -Dextensions="${{ inputs.extensions }}" -DextensionDir="${{ inputs.extensionDir }}" -Dcompile="${{ inputs.compile }}"
+      shell: cmd
