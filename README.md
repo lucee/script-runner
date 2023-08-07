@@ -1,6 +1,6 @@
 # Lucee Ant Script Runner
 
-A simple JSR-223 script runner for Lucee cfml
+Quickly run Lucee cfml applications headless (without a http server) via the command line
 
 [![CI](https://github.com/lucee/script-runner/actions/workflows/main.yml/badge.svg)](https://github.com/lucee/script-runner/actions/workflows/main.yml)
 
