@@ -17,7 +17,7 @@
 	<property name="extensionDir" value=""/>
 	<property name="compile" value=""/>
 	<!-- use .CFconfig.json fiel -->
-	<property name="luceeCFconfi=""/>
+	<property name="luceeCFconfig" value=""/>
 	<!-- enable java debugging -->
 	<property name="debugger" value=""/>
 
