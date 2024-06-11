@@ -14,8 +14,8 @@ Default `ant` will run the `sample/index.cfm` file
 
 You can specify:
 
-- Lucee version `-DluceeVersion=` (default `5.4.2.17` )
-- Lucee version by query `-DluceeVersionQuery="5.4/stable/light`
+- Lucee version `-DluceeVersion=` default `6.0.3.1`, (ie. 6.3.0.1, light-6.3.0.1, zero-6.3.0.1 )
+- Lucee version by query `-DluceeVersionQuery="5.4/stable/light` ( optional overrides luceeVersion, (version)/(stable/rc/snapshot)/(jar,light/zero) )
 - Webroot `-Dwebroot=`  (default `tests/`)
 - CFML Script to run, `-Dexecute=` (default `/index.cfm`)
 - run script via include or _internalRequest (which runs the Application.cfc if present, default ) `-DexecuteScriptByInclude="true"`
@@ -60,8 +60,8 @@ To use as a GitHub Action, to run the PDF tests after building the PDF Extension
       with:
         webroot: ${{ github.workspace }}/lucee/test
         execute: /bootstrap-tests.cfm
-        luceeVersion: ${{ env.luceeVersion }} (ie. 6.3.0.1, light-6.3.0.1, zero-6.3.0.1)
-        luceeVersionQuery: 5.4/stable/light (optional, overrides luceeVersion. (version)/(stable/rc/snapshot)/(jar,light/zero) )
+        luceeVersion: ${{ env.luceeVersion }}
+        luceeVersionQuery: 5.4/stable/light (optional, overrides luceeVersion )
         extensions: (optional list of extension guids to install)
         extensionDir: ${{ github.workspace }}/dist (for testing building an extension with CI)
         antFlags: -d or -v etc (optional, good for debugging any ant issues)
