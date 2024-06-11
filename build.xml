@@ -17,7 +17,7 @@
 	<property name="extensionDir" value=""/>
 	<property name="compile" value=""/>
 	<!-- use .CFconfig.json fiel -->
-	<property name="luceeCFconfigFile" value=""/>
+	<property name="luceeCFconfi=""/>
 	<!-- enable java debugging -->
 	<property name="debugger" value=""/>
 
@@ -83,7 +83,7 @@
 		<echo message="ExtensionDir: ${extensionDir}" />
 		<echo message="Extensions: ${extensions}" />
 		<echo message="executeScriptByInclude: ${executeScriptByInclude}" />
-		<echo message="luceeCFconfigFile: ${luceeCFconfigFile}" />
+		<echo message="luceeCFconfig: ${luceeCFconfig}" />
 		<echo message="javaDebugger: ${debugger}" />
 
 		<echo message="" />
@@ -117,7 +117,7 @@
 			<!--
 			<jvmarg value="-Dlucee.cli.printExceptions=true"/>
 			-->
-			<jvmarg value="-Dlucee.base.config=${luceeCFconfigFile}"/>
+			<jvmarg value="-Dlucee.base.config=${luceeCFconfig}"/>
 			<jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5000" if:true="${debugger}"/>
 
 			<!--
