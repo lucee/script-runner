@@ -22,6 +22,8 @@ You can specify:
 - any extra extensions `-Dextensions=` (default ``)
 - manual extension install (`*.lex`) from a directory `-DextensionDir=` (default ``)
 - compile all cfml under webroot `-Dcompile="true"`
+- pass in a .CFconfig.json `-DluceeCFconfig="/path/to/.CFconfig.json`
+- use a java debugger `-Ddebugger="true"` opens a java debugging port 5000, with suspend=y
 
 `ant -DluceeVersion="6.0.0.95-SNAPSHOT" -Dwebroot="C:\work\lucee-docs" -Dexecute="import.cfm" -Dlucee.extensions=""`
 
@@ -64,6 +66,8 @@ To use as a GitHub Action, to run the PDF tests after building the PDF Extension
         extensionDir: ${{ github.workspace }}/dist
         antFlags: -d or -v etc (optional, good for debugging any ant issues)
         compile: true (optional, compiles all the cfml under the webroot)
+        luceeCFconfig: /path/to/.CFconfig.json pass in additional configuration
+        debugger: true (optional) runs with java debugging enabled on port 5000
       env:
         testLabels: pdf
         testAdditional: ${{ github.workspace }}/tests

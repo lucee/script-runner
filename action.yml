@@ -25,9 +25,15 @@ inputs:
   antFlags:
     description: additional flags to pass to ant
     default: ""
+  debugger:
+    description: enable java debugging on port 5000 with suspend=y (not for CI, it will just hang waiting for you to connect a debugger)
+    default: "false"
+  luceeCFconfig:
+    description: pass in a path to a .CFconfig.json file
+    default: ""
 runs:
   using: "composite"
-  steps: 
+  steps:
     - if: runner.os != 'Windows'
       run: |
         pwd
@@ -38,9 +44,12 @@ runs:
         echo extensions ${{ inputs.extensions }}
         echo extensionDir ${{ inputs.extensionDir }}
         echo compile ${{ inputs.compile }}
+        echo luceeCFconfig:${{inputs.luceeCFconfig}}
         ant -buildfile "${{ github.action_path }}/build.xml" ${{ inputs.antFlags }} -DluceeVersion="${{ inputs.luceeVersion }}" -DluceeVersionQuery="${{ inputs.luceeVersionQuery }}" \
           -Dwebroot="${{ inputs.webroot }}" -Dexecute="${{ inputs.execute }}" \
-          -Dextensions="${{ inputs.extensions }}" -DextensionDir="${{ inputs.extensionDir }}" -Dcompile="${{ inputs.compile }}"
+          -Dextensions="${{ inputs.extensions }}" -DextensionDir="${{ inputs.extensionDir }}" \
+          -Dcompile="${{ inputs.compile }}" -Ddebugger="${{ inputs.debugger }}" \
+          -luceeCFconfig="${{inputs.luceeCFconfig}}"
       shell: bash
     - if: runner.os == 'Windows'
       run: |
@@ -52,5 +61,10 @@ runs:
         echo extensions ${{ inputs.extensions }}
         echo extensionDir ${{ inputs.extensionDir }}
         echo compile ${{ inputs.compile }}
-        ant -buildfile "${{ github.action_path }}/build.xml" ${{ inputs.antFlags }} -DluceeVersion="${{ inputs.luceeVersion }}" -DluceeVersionQuery="${{ inputs.luceeVersionQuery }}" -Dwebroot="${{ inputs.webroot }}" -Dexecute="${{ inputs.execute }}" -Dextensions="${{ inputs.extensions }}" -DextensionDir="${{ inputs.extensionDir }}" -Dcompile="${{ inputs.compile }}"
+        echo luceeCFconfig:${{inputs.luceeCFconfig}}
+        ant -buildfile "${{ github.action_path }}/build.xml" ${{ inputs.antFlags }} ^
+        -DluceeVersion="${{ inputs.luceeVersion }}" -DluceeVersionQuery="${{ inputs.luceeVersionQuery }}" ^
+         -Dwebroot="${{ inputs.webroot }}" -Dexecute="${{ inputs.execute }}" -Dextensions="${{ inputs.extensions }}" ^
+         -DextensionDir="${{ inputs.extensionDir }}" -Dcompile="${{ inputs.compile }}" ^
+         -Ddebugger="${{ inputs.debugger }}" -luceeCFconfig="${{inputs.luceeCFconfig}}"
       shell: cmd
