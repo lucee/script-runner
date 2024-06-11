@@ -10,16 +10,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Cache Maven packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.m2
           key: lucee-script-runner-maven-cache
 
       - name: Cache Lucee files
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/work/script-runner/script-runner/lucee-download-cache/
           key: lucee-downloads
@@ -30,14 +30,14 @@ jobs:
       - name: Run Latest Lucee 6 (via version query)
         run: ant -DluceeVersionQuery="6/all/jar" -Dexecute="/debug.cfm"
 
-      - name: Run Lucee 6
-        run: ant -DluceeVersion="6.0.0.523-SNAPSHOT" -Dexecute="/debug.cfm"
+      - name: Run Lucee 6 Stable
+        run: ant -DluceeVersion="6.0.3.1" -Dexecute="/debug.cfm"
 
       - name: Run Lucee 5 (using Lucee light, no extensions)
         run: ant -DluceeVersion="light-5.4.2.17" -Dexecute="/debug.cfm"
 
       - name: Run Lucee 6 (using Lucee zero, no extensions, no admin, no docs)
-        run: ant -DluceeVersion="zero-6.0.0.523-SNAPSHOT" -Dexecute="/debug.cfm"
+        run: ant -DluceeVersion="zero-6.0.3.1" -Dexecute="/debug.cfm"
 
       - name: Run Latest Lucee 5 RC Light
         run: ant -DluceeVersionQuery="5/rc/light" -Dexecute="/debug.cfm"

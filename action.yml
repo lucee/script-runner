@@ -2,10 +2,10 @@ name: 'Lucee Script Runner'
 description: 'Run Lucee via the command line'
 inputs:
   luceeVersion:
-    description: Lucee Version to run, i.e. "light-5.4.2.17"
+    description: Lucee Version to run, i.e. "light-6.0.3.1", "5.4.6.9", "zero-6.0.3.1"
     required: true
   luceeVersionQuery:
-    description: Lucee Version Query to run (overrides luceeVersion, i.e. "5.4/table/light" )
+    description: Lucee Version Query to run (overrides luceeVersion, i.e. "5.4/stable/light", "6.1/snapshot/jar", "6/stable/zero" )
     default: ""
   webroot:
     description: cfml webroot
