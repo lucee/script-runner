@@ -33,7 +33,7 @@ If no webroot is specfied, you can run the provided debug script, to see which e
 
 `ant -buildfile="C:\work\script-runner" -Dexecute="/debug.cfm"`
 
-`ant -buildfile="C:\work\script-runner" -Dexecute="/debug.cfm" -DluceeVersion="light-6.0.0.95-SNAPSHOT"`  (`light` has no bundled extensions)
+`ant -buildfile="C:\work\script-runner" -Dexecute="/debug.cfm" -DluceeVersion="light-6.0.0.95-SNAPSHOT"` (`light` has no bundled extensions, `zero` has no extension or admin)
 
 ## As a GitHub Action
 
@@ -60,10 +60,10 @@ To use as a GitHub Action, to run the PDF tests after building the PDF Extension
       with:
         webroot: ${{ github.workspace }}/lucee/test
         execute: /bootstrap-tests.cfm
-        luceeVersion: ${{ env.luceeVersion }}
-        luceeVersionQuery: 5.4/stable/light (optional, overrides luceeVersion)
+        luceeVersion: ${{ env.luceeVersion }} (ie. 6.3.0.1, light-6.3.0.1, zero-6.3.0.1)
+        luceeVersionQuery: 5.4/stable/light (optional, overrides luceeVersion. (version)/(stable/rc/snapshot)/(jar,light/zero) )
         extensions: (optional list of extension guids to install)
-        extensionDir: ${{ github.workspace }}/dist
+        extensionDir: ${{ github.workspace }}/dist (for testing building an extension with CI)
         antFlags: -d or -v etc (optional, good for debugging any ant issues)
         compile: true (optional, compiles all the cfml under the webroot)
         luceeCFconfig: /path/to/.CFconfig.json pass in additional configuration
