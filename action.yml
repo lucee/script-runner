@@ -49,7 +49,7 @@ runs:
           -Dwebroot="${{ inputs.webroot }}" -Dexecute="${{ inputs.execute }}" \
           -Dextensions="${{ inputs.extensions }}" -DextensionDir="${{ inputs.extensionDir }}" \
           -Dcompile="${{ inputs.compile }}" -Ddebugger="${{ inputs.debugger }}" \
-          -luceeCFconfig="${{inputs.luceeCFconfig}}"
+          -DluceeCFconfig="${{inputs.luceeCFconfig}}"
       shell: bash
     - if: runner.os == 'Windows'
       run: |
@@ -66,5 +66,5 @@ runs:
         -DluceeVersion="${{ inputs.luceeVersion }}" -DluceeVersionQuery="${{ inputs.luceeVersionQuery }}" ^
          -Dwebroot="${{ inputs.webroot }}" -Dexecute="${{ inputs.execute }}" -Dextensions="${{ inputs.extensions }}" ^
          -DextensionDir="${{ inputs.extensionDir }}" -Dcompile="${{ inputs.compile }}" ^
-         -Ddebugger="${{ inputs.debugger }}" -luceeCFconfig="${{inputs.luceeCFconfig}}"
+         -Ddebugger="${{ inputs.debugger }}" -DluceeCFconfig="${{inputs.luceeCFconfig}}"
       shell: cmd
