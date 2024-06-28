@@ -24,6 +24,8 @@
 	<property name="preCleanup" value="true"/>
 	<!-- delete the Lucee working dir afterwards -->
 	<property name="postCleanup" value="true"/>
+	<property name="setAdminPassword" value="true"/>
+	<property name="adminPassword" value="admin"/>
 
 	<!-- scripts can be run as an include, or via internalRequest (default) which picks up any Application.cfc -->
 	<property name="executeScriptByInclude" value=""/>
@@ -89,6 +91,8 @@
 		<echo message="executeScriptByInclude: ${executeScriptByInclude}" />
 		<echo message="luceeCFconfig: ${luceeCFconfig}" />
 		<echo message="javaDebugger: ${debugger}" />
+		<echo message="setAdminPassword: ${setAdminPassword}" />
+		<echo message="adminPassword: ${adminPassword}" />
 
 		<echo message="" />
 		<!-- execute CFML testcases -->
@@ -121,6 +125,9 @@
 			<jvmarg value="-Dlucee.extensions=${extensions}"/>
 			<jvmarg value="-Dlucee.mapping.first=true"/>
 			<jvmarg value="-Dcompile=${compile}"/>
+			<jvmarg value="-DsetAdminPassword=${setAdminPassword}"/>
+			<jvmarg value="-DadminPassword=${adminPassword}"/>
+
 			<!--
 			<jvmarg value="-Dlucee.cli.printExceptions=true"/>
 			-->
