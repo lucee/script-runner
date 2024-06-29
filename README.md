@@ -1,6 +1,6 @@
 # Lucee Ant Script Runner
 
-Quickly run Lucee cfml applications headless (without a http server) via the command line
+Quickly run Lucee CFML applications headless (without a HTTP server) via the command line
 
 [![CI](https://github.com/lucee/script-runner/actions/workflows/main.yml/badge.svg)](https://github.com/lucee/script-runner/actions/workflows/main.yml)
 
@@ -37,7 +37,7 @@ If no webroot is specfied, you can run the provided debug script, to see which e
 
 ## As a GitHub Action
 
-To use as a GitHub Action, to run the PDF tests after building the PDF Extension, just add the following yaml
+To use as a GitHub Action, to run the PDF tests after building the PDF Extension, just add the following YAML
 
 ```
     - name: Checkout Lucee
