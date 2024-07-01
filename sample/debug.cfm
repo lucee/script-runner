@@ -8,6 +8,12 @@
 	}
 
 	systemoutput("", true);
+	systemoutput("--------- URL variables -------", true);
+	loop collection=#url# key="key" value="value"{
+		systemoutput("url.#key#=#serializeJson(value)#", true);
+	}
+
+	systemoutput("", true);
 	systemoutput("--------- System properties (lucee.*) -------", true);
 	for ( p in server.system.properties ){
 		if ( listFirst( p, "." ) eq "lucee" ){
