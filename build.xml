@@ -20,6 +20,10 @@
 	<property name="luceeCFconfig" value=""/>
 	<!-- enable java debugging -->
 	<property name="debugger" value=""/>
+	<!-- delete the Lucee working dir before -->
+	<property name="preCleanup" value="true"/>
+	<!-- delete the Lucee working dir afterwards -->
+	<property name="postCleanup" value="true"/>
 
 	<!-- scripts can be run as an include, or via internalRequest (default) which picks up any Application.cfc -->
 	<property name="executeScriptByInclude" value=""/>
@@ -88,7 +92,7 @@
 
 		<echo message="" />
 		<!-- execute CFML testcases -->
-		<delete dir="${temp}"/>
+		<delete dir="${temp}" if:true="${preCleanup}"/>
 		<mkdir dir="${temp}"/>
 		<mkdir dir="${temp}/lucee"/>
 		<mkdir dir="${temp}/lucee/web"/>
@@ -96,6 +100,9 @@
 		<mkdir dir="${temp}/lucee/lucee-server/deploy"/>
 		<!-- set a default admin password
 		<echo file="${temp}/lucee/lucee-server/context/password.txt" append="false">admin</echo>
+		-->
+		<!--
+		<echoproperties destFile="${temp}/lucee/ant_args.properties"/>
 		-->
 
 		<java classname="org.apache.tools.ant.launch.Launcher" dir="${temp}/lucee" fork="true" failonerror="true" errorproperty="errorOut">
@@ -131,7 +138,7 @@
 			-->
 		</java>
 		<echo>${errorOut}</echo>
-		<delete dir="${temp}"/>
+		<delete dir="${temp}" if:true="${postCleanup}"/>
 		<echo message="Finished!" />
 	</target>
 </project>
