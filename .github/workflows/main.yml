@@ -31,7 +31,7 @@ jobs:
         run: ant -DluceeVersionQuery="6/all/jar" -Dexecute="/debug.cfm"
 
       - name: Run Lucee 6 Stable
-        run: ant -DluceeVersion="6.0.3.1" -Dexecute="/debug.cfm" -DLuceeExampleUrl="demo" -Dauthor="Zac Spitzer"
+        run: ant -DluceeVersion="6.0.3.1" -Dexecute="/debug.cfm" -Dtruth="cfml rocks" -Dauthor="Zac Spitzer"
 
       - name: Run Lucee 5 (using Lucee light, no extensions)
         run: ant -DluceeVersion="light-5.4.2.17" -Dexecute="/debug.cfm"

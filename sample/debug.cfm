@@ -1,65 +1,65 @@
 <cfscript>
-	systemOutput("Hello World, Lucee Script Engine Runner, Debugger", true);
-	systemOutput("#getCurrentTemplatePath()#", true);
-	systemoutput("", true);
-	systemoutput("--------- variables -------", true);
+	systemOutput( "Hello World, Lucee Script Engine Runner, Debugger", true );
+	systemOutput( "#getCurrentTemplatePath()#", true );
+	systemOutput( "", true );
+	systemOutput( "--------- variables -------", true );
 	loop collection=#variables# key="key" value="value"{
-		systemoutput("#key#=#serializeJson(value)#", true);
+		systemOutput( "#key#=#serializeJson(value)#", true );
 	}
 
-	systemoutput("", true);
-	systemoutput("--------- URL variables -------", true);
+	systemOutput( "", true );
+	systemOutput( "--------- URL variables -------", true );
 	loop collection=#url# key="key" value="value"{
-		systemoutput("url.#key#=#serializeJson(value)#", true);
+		systemOutput( "url.#key#=#serializeJson(value)#", true );
 	}
 
-	systemoutput("", true);
-	systemoutput("--------- System properties (lucee.*) -------", true);
+	systemOutput( "", true );
+	systemOutput( "--------- System properties (lucee.*) -------", true );
 	for ( p in server.system.properties ){
 		if ( listFirst( p, "." ) eq "lucee" ){
 			if ( p contains "password" or p contains "secret"){
-				systemOutput( p & ": (not shown coz it's a password)", true);
+				systemOutput( p & ": (not shown coz it's a password)", true );
 			} else {
-				systemOutput( p & ": " & server.system.properties[p], true);
+				systemOutput( p & ": " & server.system.properties[ p ], true );
 			}
 		}
 	}
 
-	systemoutput("", true);
-	systemoutput("--------- Environment variables (lucee*) -------", true);
+	systemOutput( "", true );
+	systemOutput( "--------- Environment variables (lucee* && ant*) -------", true );
 	for ( e in server.system.environment ){
-		if ( left( e, 5 ) eq "lucee" || left( e, 4 ) eq "ant_"){
+		if ( left( e, 5 ) eq "lucee" || left( e, 3 ) eq "ant" ){
 			if ( e contains "password" or e contains "secret" ){
-				systemOutput( e & ": (not shown coz it's a password)", true);
+				systemOutput( e & ": (not shown coz it's a password)", true );
 			} else {
-				systemOutput( e & ": " & server.system.environment[e], true);
+				systemOutput( e & ": " & server.system.environment[ e ], true );
 			}
 		}
 	}
 
-	systemoutput("", true);
-	systemoutput("--------- Installed Extensions -------", true);
+	systemOutput( "", true );
+	systemOutput( "--------- Installed Extensions -------", true );
 	q_ext = extensionList();
 	loop query="q_ext"{
-		systemoutput("#q_ext.name#, #q_ext.version#", true);
+		systemOutput( "#q_ext.name#, #q_ext.version#", true );
 	}
 
-	systemoutput("", true);
-	systemoutput("--------- Directories -------", true);
+	systemOutput( "", true );
+	systemOutput( "--------- Directories -------", true );
 	q_ext = extensionList();
 	loop list="{lucee-web},{lucee-server},{lucee-config},{temp-directory},{home-directory},{web-root-directory},{system-directory},{web-context-hash},{web-context-label}"
 		item="dir" {
-		systemoutput("#dir#, #expandPath(dir)#", true);
+		systemOutput( "#dir#, #expandPath(dir)#", true );
 	}
 
-	systemoutput("", true);
-	systemoutput("--------- context cfcs -------", true);
+	systemOutput( "", true );
+	systemOutput( "--------- context cfcs -------", true );
 
 	cfcs = directoryList(path=expandPath("{lucee-server}"), recurse=true, filter="*.cfc");
 	for (c in cfcs){
-		systemoutput(c, true);
+		systemOutput(c, true );
 	}
 
-	systemoutput("", true);
+	systemOutput( "", true );
 
 </cfscript>
