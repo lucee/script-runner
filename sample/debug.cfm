@@ -28,7 +28,7 @@
 	systemoutput("", true);
 	systemoutput("--------- Environment variables (lucee*) -------", true);
 	for ( e in server.system.environment ){
-		if ( left( e, 5 ) eq "lucee"){
+		if ( left( e, 5 ) eq "lucee" || left( e, 4 ) eq "ant_"){
 			if ( e contains "password" or e contains "secret" ){
 				systemOutput( e & ": (not shown coz it's a password)", true);
 			} else {
