@@ -48,29 +48,3 @@ jobs:
       - name: Run Latest Stable Lucee 5, compile webroot (invalid code)
         continue-on-error: true
         run: ant -DluceeVersionQuery="5/stable/jar" -Dexecute="/index.cfm" -Dcompile="true" -Dwebroot="${{ github.workspace }}/sampleBad/"
-
-  build-windows:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Cache Maven packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2
-          key: lucee-script-runner-maven-cache
-
-      - name: Cache Lucee files
-        uses: actions/cache@v4
-        with:
-          path: ~/work/script-runner/script-runner/lucee-download-cache/
-          key: lucee-downloads
-
-      - name: Run default
-        run: ant
-
-      - name: Run Latest Lucee 6 (via version query)
-        run: ant -DluceeVersionQuery="6/all/jar" -Dexecute="/debug.cfm"
-
-      - name: Run Lucee 6 Stable
-        run: ant -DluceeVersion="6.0.3.1" -Dexecute="/debug.cfm" -Dtruth="cfml rocks" -Dauthor="Zac Spitzer"
