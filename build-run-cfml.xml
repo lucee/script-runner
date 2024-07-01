@@ -127,10 +127,10 @@
 						return params;
 					}
 
-
 					function loadPassedVariables() localmode=true {
-
+						// TODO this is windows only and doesn't work
 						var params =  parseAntParams( server.system.environment.ANT_CMD_LINE_ARGS?: "" );
+						// var props = FileRead( server.system.properties[ "lucee.base.dir" ] & "/ant_args.properties" );
 						StructAppend(params, variables);
 						var passedVariables = {};
 						loop collection=#params# key="key" value="value" {
