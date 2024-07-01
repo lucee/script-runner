@@ -8,7 +8,7 @@ inputs:
     description: Lucee Version Query to run (overrides luceeVersion, i.e. "5.4/stable/light", "6.1/snapshot/jar", "6/stable/zero" )
     default: ""
   webroot:
-    description: cfml webroot
+    description: webroot directory
     required: true
   execute:
     description: cfml script to execute
@@ -28,9 +28,15 @@ inputs:
   debugger:
     description: enable java debugging on port 5000 with suspend=y (not for CI, it will just hang waiting for you to connect a debugger)
     default: "false"
-  luceeCFconfig:
-    description: pass in a path to a .CFconfig.json file
+  luceeCFConfig:
+    description: pass in a path to a complete .CFConfig.json file (not like configImport!)
     default: ""
+  preCleanup:
+    description: purge the directory Lucee is deployed into before starting
+    default: "true"
+  postCleanup:
+    description: purge the directory Lucee is deployed into after finishing
+    default: "true"
 runs:
   using: "composite"
   steps:
@@ -44,12 +50,13 @@ runs:
         echo extensions ${{ inputs.extensions }}
         echo extensionDir ${{ inputs.extensionDir }}
         echo compile ${{ inputs.compile }}
-        echo luceeCFconfig:${{inputs.luceeCFconfig}}
+        echo luceeCFConfig:${{inputs.luceeCFConfig}}
         ant -buildfile "${{ github.action_path }}/build.xml" ${{ inputs.antFlags }} -DluceeVersion="${{ inputs.luceeVersion }}" -DluceeVersionQuery="${{ inputs.luceeVersionQuery }}" \
           -Dwebroot="${{ inputs.webroot }}" -Dexecute="${{ inputs.execute }}" \
           -Dextensions="${{ inputs.extensions }}" -DextensionDir="${{ inputs.extensionDir }}" \
           -Dcompile="${{ inputs.compile }}" -Ddebugger="${{ inputs.debugger }}" \
-          -DluceeCFconfig="${{inputs.luceeCFconfig}}"
+          -DluceeCFConfig="${{inputs.luceeCFConfig}}" \
+          -DpreCleanup="${{inputs.preCleanup}}" -DpostCleanup="${{inputs.postCleanup}}"
       shell: bash
     - if: runner.os == 'Windows'
       run: |
@@ -61,10 +68,11 @@ runs:
         echo extensions ${{ inputs.extensions }}
         echo extensionDir ${{ inputs.extensionDir }}
         echo compile ${{ inputs.compile }}
-        echo luceeCFconfig:${{inputs.luceeCFconfig}}
+        echo luceeCFConfig:${{inputs.luceeCFConfig}}
         ant -buildfile "${{ github.action_path }}/build.xml" ${{ inputs.antFlags }} ^
         -DluceeVersion="${{ inputs.luceeVersion }}" -DluceeVersionQuery="${{ inputs.luceeVersionQuery }}" ^
          -Dwebroot="${{ inputs.webroot }}" -Dexecute="${{ inputs.execute }}" -Dextensions="${{ inputs.extensions }}" ^
          -DextensionDir="${{ inputs.extensionDir }}" -Dcompile="${{ inputs.compile }}" ^
-         -Ddebugger="${{ inputs.debugger }}" -DluceeCFconfig="${{inputs.luceeCFconfig}}"
+         -Ddebugger="${{ inputs.debugger }}" -DluceeCFConfig="${{inputs.luceeCFConfig}}" ^
+         -DpreCleanup="${{inputs.preCleanup}}" -DpostCleanup="${{inputs.postCleanup}}"
       shell: cmd

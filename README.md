@@ -22,8 +22,10 @@ You can specify:
 - any extra extensions `-Dextensions=` (default ``)
 - manual extension install (`*.lex`) from a directory `-DextensionDir=` (default ``)
 - compile all cfml under webroot `-Dcompile="true"`
-- pass in a .CFconfig.json `-DluceeCFconfig="/path/to/.CFconfig.json`
+- pass in a full .CFConfig.json file `-DluceeCFConfig="/path/to/.CFConfig.json`
 - use a java debugger `-Ddebugger="true"` opens a java debugging port 5000, with suspend=y
+- preCleanup `-DpreCleanup="true"` purges the Lucee working dir before starting
+- postCleanup `-DpostCleanup="true"` purges the Lucee working dir after finishing
 
 `ant -DluceeVersion="6.0.0.95-SNAPSHOT" -Dwebroot="C:\work\lucee-docs" -Dexecute="import.cfm" -Dlucee.extensions=""`
 
@@ -66,8 +68,10 @@ To use as a GitHub Action, to run the PDF tests after building the PDF Extension
         extensionDir: ${{ github.workspace }}/dist (for testing building an extension with CI)
         antFlags: -d or -v etc (optional, good for debugging any ant issues)
         compile: true (optional, compiles all the cfml under the webroot)
-        luceeCFconfig: /path/to/.CFconfig.json pass in additional configuration
+        luceeCFConfig: /path/to/.CFConfig.json pass in additional configuration
         debugger: true (optional) runs with java debugging enabled on port 5000
+        preCleanup: true (purges Lucee working directory before starting)
+        postCleanup: true (purges Lucee working directory after finishing)
       env:
         testLabels: pdf
         testAdditional: ${{ github.workspace }}/tests
