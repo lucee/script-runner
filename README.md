@@ -21,9 +21,9 @@ You can specify:
 - run script via include or _internalRequest (which runs the Application.cfc if present, default ) `-DexecuteScriptByInclude="true"`
 - any extra extensions `-Dextensions=` (default ``)
 - manual extension install (`*.lex`) from a directory `-DextensionDir=` (default ``)
-- compile all cfml under webroot `-Dcompile="true"`
+- compile all CFML under webroot `-Dcompile="true"`
 - pass in a full .CFConfig.json file `-DluceeCFConfig="/path/to/.CFConfig.json`
-- use a java debugger `-Ddebugger="true"` opens a java debugging port 5000, with suspend=y
+- use a Java debugger `-Ddebugger="true"` opens a Java debugging port 5000, with suspend=y
 - preCleanup `-DpreCleanup="true"` purges the Lucee working dir before starting
 - postCleanup `-DpostCleanup="true"` purges the Lucee working dir after finishing
 
