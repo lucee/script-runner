@@ -1,6 +1,6 @@
 <cfscript>
 
-	function safelyReportVar(name, value){
+	function safelyReportVar( name, value ){
 		if ( arguments.name contains "password" or arguments.name contains "secret" or arguments.name contains "token"){
 			systemOutput( arguments.name & ": (not shown coz it's a password/secret/token)", true );
 		} else {
@@ -14,7 +14,8 @@
 	systemOutput( "--------- variables -------", true );
 
 	loop collection=#variables# key="key" value="value"{
-		safelyReportVar( key, serializeJson( value ) );
+		if ( isSimpleValue( value ) )
+			safelyReportVar( key, serializeJson( value ) );
 	}
 
 	systemOutput( "", true );
