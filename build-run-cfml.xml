@@ -47,6 +47,9 @@
 						systemOutput( e.message, true ); // may exist from previous execution
 					}
 
+					if ( len( webroot ) eq 0 )
+						webroot = getDirectoryFromPath(getCurrentTemplatePath()) & "sample" );
+
 
 					admin
 						action="updateMapping"
