@@ -2,7 +2,10 @@
 
 	function safelyReportVar( name, value ){
 		if ( arguments.name contains "password" or arguments.name contains "secret" or arguments.name contains "token"){
-			systemOutput( arguments.name & ": (not shown coz it's a password/secret/token)", true );
+			if ( len( arguments.value ) eq 0 )
+				systemOutput( arguments.name & ": (empty password/secret/token)", true );
+			else
+				systemOutput( arguments.name & ": (not shown coz it's a password/secret/token)", true );
 		} else {
 			systemOutput( arguments.name & ": " & arguments.value, true );
 		}
