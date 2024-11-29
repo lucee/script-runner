@@ -28,10 +28,16 @@
 	for (a = 1; a LTE len(response.artifacts); a++ ){
 		if (response.artifacts[a].name contains artifact_filter
 			&& response.artifacts[a].workflow_run.head_branch eq branch){
-			systemOutput(response.artifacts[a], true);
+			// systemOutput(response.artifacts[a], true);
 			if (response.artifacts[a].expired)
 				break;
 			artifact_zip = getTempFile(getTempDirectory(),"github-artifact", "zip");
+
+			/*
+				when redirect=true, the following error is triggered
+			  	400 Authentication information is not given in the correct format. Check the value of Authorization header
+				see https://learn.microsoft.com/en-au/azure/container-registry/container-registry-faq#authentication-information-isn-t-given-in-the-correct-format-on-direct-rest-api-calls
+			*/
 
 			http url=response.artifacts[a].archive_download_url redirect=false {
 				httpparam type="header" name="Accept" value="application/vnd.github+json";
@@ -43,6 +49,11 @@
 			if ( cfhttp.errorDetail does not contain "302 Found" )
 				throw "get download artifact url failed [#cfhttp.errordetail#]";
 
+			/*
+				manually follow the redirect url and don't pass authorization STILL NOT WORKING THO
+				maybe https://luceeserver.atlassian.net/browse/LDEV-3537 ?
+			*/
+			systemOutput(cfhttp.responseHeader.location, true);
 			http url=cfhttp.responseHeader.location path=getTempDirectory() file=listLast(artifact_zip,"\/") {
 				//httpparam type="header" name="Accept" value="application/vnd.github+json";
 				//httpparam type="header" name="Authorization" value="Bearer #github_token#";
