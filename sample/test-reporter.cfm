@@ -3,55 +3,58 @@
 	files = [];
 	out = [];
 
-	if ( structKeyExists( server.system.environment, "GITHUB_REF_NAME" ) ){
-		repo = server.system.environment.GITHUB_REPOSITORY;
-		branch = server.system.environment.GITHUB_REF_NAME;
-		artifact_name = variables.artifact_name ?: "";
-		artifact_filter = variables.artifact_name ?: "";
-		github_token = variables.githubToken ?: "";
-		if ( !len( github_token ) )
-			throw "no github token?";
-		// fetch artifacts, try and find the last one for this branch
-		artifacts_url = "https://api.github.com/repos/#repo#/actions/artifacts?per_page=100&name=#artifact_name#";
-		http url=artifacts_url throwOnError=true;
-		if ( !isJson( cfhttp.filecontent ) )
-			throw( message="Github REST API didn't return json", details=cfhttp.filecontent );
-		response = deserializeJSON( cfhttp.filecontent );
-		artifact_found = 0;
-		for (a = 1; a LTE len(response.artifacts); a++ ){
-			if (response.artifacts[a].name contains artifact_filter
-				&& response.artifacts[a].workflow_run.head_branch eq branch){
-				systemOutput(response.artifacts[a], true);
-				if (response.artifacts[a].expired)
-					break;
-				artifact_zip = getTempFile(getTempDirectory(),"github-artifact", "zip");
-				http url=response.artifacts[a].archive_download_url path=getTempDirectory() file=listLast(artifact_zip,"\/") throwOnError=true {
-					httpparam type="header" name="Authorization" value="Bearer #github_token#";
-				};
-				// dump(cfhttp);
-				if (!isZipFile(artifact_zip))
-					throw "artifact wasn't a zip file";
-				tmp_dir = getTempDirectory() & createUUID();
-				directoryCreate( tmp_dir );
-				Extract("zip", artifact_zip, tmp_dir);
-				artifacts_files = directoryList( path=dir, filter=file_filter, sort="datelastmodifed desc" );
-				if ( len( artifacts_files ) eq 1){
-					ArrayAppend(files, artifacts_files[ 1 ] );
-					artifact_found++;
-				} else {
-					systemOutput("No results found in artifacts missing? ")
-				}
-				if (artifact_found gt 1)
-					break; // report on the last two runs if available
+	if ( !structKeyExists( server.system.environment, "GITHUB_REF_NAME" ) ){
+		systemOutput("Not running on github actions, aborting ");
+		abort;
+	}
+	repo = server.system.environment.GITHUB_REPOSITORY;
+	branch = server.system.environment.GITHUB_REF_NAME;
+	artifact_name = variables.artifact_name ?: "";
+	artifact_filter = variables.artifact_name ?: "";
+	github_token = variables.githubToken ?: "";
+	if ( !len( github_token ) )
+		throw "no github token?";
+	// fetch artifacts, try and find the last one for this branch
+	artifacts_url = "https://api.github.com/repos/#repo#/actions/artifacts?per_page=100&name=#artifact_name#";
+	http url=artifacts_url throwOnError=true;
+	if ( !isJson( cfhttp.filecontent ) )
+		throw( message="Github REST API didn't return json", details=cfhttp.filecontent );
+	response = deserializeJSON( cfhttp.filecontent );
+	artifact_found = [];
+	for (a = 1; a LTE len(response.artifacts); a++ ){
+		if (response.artifacts[a].name contains artifact_filter
+			&& response.artifacts[a].workflow_run.head_branch eq branch){
+			systemOutput(response.artifacts[a], true);
+			if (response.artifacts[a].expired)
+				break;
+			artifact_zip = getTempFile(getTempDirectory(),"github-artifact", "zip");
+			http url=response.artifacts[a].archive_download_url path=getTempDirectory() file=listLast(artifact_zip,"\/") throwOnError=true {
+				httpparam type="header" name="Authorization" value="Bearer #github_token#";
+			};
+			// dump(cfhttp);
+			if (!isZipFile(artifact_zip))
+				throw "artifact wasn't a zip file";
+			tmp_dir = getTempDirectory() & createUUID();
+			directoryCreate( tmp_dir );
+			Extract("zip", artifact_zip, tmp_dir);
+			artifacts_files = directoryList( path=dir, filter=file_filter, sort="datelastmodifed desc" );
+			if ( len( artifacts_files ) eq 1){
+				ArrayAppend( files, artifacts_files[ 1 ] );
+				ArrayAppend( artifact_found, response.artifacts[a].workflow_run.id );
+			} else {
+				systemOutput("No results found in artifacts missing? ")
 			}
+			if (len(artifact_found) gt 1)
+				break; // report on the last two runs if available
 		}
-		if ( !artifact_found ) {
-			systemOutput("No artifacts found for branch [#branch#]? ")
-		}
-
+	}
+	if ( !len( artifact_found ) ) {
+		systemOutput("No artifacts found for branch [#branch#]? ")
+	} else if ( !arrayContains(artifact_found, server.system.environment.GITHUB_RUN_ID ) ){
+		throw "No artifacts from the current run [#server.system.environment.GITHUB_RUN_ID#] found [#artifact_found.toJson()#]";
 	}
 
-	if (len(files) gt 2){
+	if ( len( files ) gt 2 ){
 		files = arraySlice( files, 1, 2 );
 	} else if ( len( files ) lt 2 ){
 		systemOutput( "Not enough artifacts found to compare, [#len(files)#] found", true);
