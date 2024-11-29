@@ -44,9 +44,9 @@
 				throw "get download artifact url failed [#cfhttp.errordetail#]";
 
 			http url=cfhttp.responseHeader.location path=getTempDirectory() file=listLast(artifact_zip,"\/") {
-				httpparam type="header" name="Accept" value="application/vnd.github+json";
-				httpparam type="header" name="Authorization" value="Bearer #github_token#";
-				httpparam type="header" name="X-GitHub-Api-Version" value="2022-11-28";
+				//httpparam type="header" name="Accept" value="application/vnd.github+json";
+				//httpparam type="header" name="Authorization" value="Bearer #github_token#";
+				//httpparam type="header" name="X-GitHub-Api-Version" value="2022-11-28";
 			};
 			systemOutput( cfhttp, true );
 			if ( cfhttp.error )
