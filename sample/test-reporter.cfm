@@ -34,8 +34,6 @@
 				httpparam type="header" name="Authorization" value="Bearer #github_token#";
 			};
 			// dump(cfhttp);
-			if (!isZipFile(artifact_zip))
-				throw "artifact wasn't a zip file";
 			tmp_dir = getTempDirectory() & createUUID();
 			directoryCreate( tmp_dir );
 			Extract("zip", artifact_zip, tmp_dir);
