@@ -12,6 +12,7 @@
 	artifact_name = variables.artifact_name ?: "";
 	artifact_filter = variables.artifact_name ?: "";
 	github_token = variables.githubToken ?: "";
+	variance_threshold = variables.variance_threshold ?: 10; // threshold for reporting test case different performance
 	if ( !len( github_token ) )
 		throw "no github token?";
 	// fetch artifacts, try and find the last one for this branch
@@ -227,7 +228,7 @@
 			}
 			arrayAppend( row, numberFormat( test.diff ) );
 			_logger( "|" & arrayToList( row, "|" ) & "|" );
-			if (abs(test.diff) gt 10){
+			if ( abs( test.diff ) gt variance_threshold ){
 				html &= "<tr>";
 				arrayEach(row, function(el){
 					html &= "<td>" & encodeForHtml( el );

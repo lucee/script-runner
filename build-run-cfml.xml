@@ -48,7 +48,7 @@
 					}
 
 					if ( len( webroot ) eq 0 )
-						webroot = getDirectoryFromPath( getCurrentTemplatePath() & "sample" );
+						webroot = ExpandPath( server.system.properties[ "lucee.base.dir" ] & "/../../sample" );
 
 
 					admin
