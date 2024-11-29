@@ -32,8 +32,22 @@
 			if (response.artifacts[a].expired)
 				break;
 			artifact_zip = getTempFile(getTempDirectory(),"github-artifact", "zip");
-			http url=response.artifacts[a].archive_download_url path=getTempDirectory() file=listLast(artifact_zip,"\/") {
+
+			http url=response.artifacts[a].archive_download_url redirect=false {
+				httpparam type="header" name="Accept" value="application/vnd.github+json";
 				httpparam type="header" name="Authorization" value="Bearer #github_token#";
+				httpparam type="header" name="X-GitHub-Api-Version" value="2022-11-28";
+			}; // this will return a 302
+
+			systemOutput( cfhttp, true );
+			if ( cfhttp.error )
+				throw "get download artifact url failed [#cfhttp.errordetail#]";
+
+
+			http url=cfhttp.responseHeader.location path=getTempDirectory() file=listLast(artifact_zip,"\/") {
+			//httpparam type="header" name="Accept" value="application/vnd.github+json";
+			//	httpparam type="header" name="Authorization" value="Bearer #github_token#";
+			//	httpparam type="header" name="X-GitHub-Api-Version" value="2022-11-28";
 			};
 			systemOutput( cfhttp, true );
 			if ( cfhttp.error )
