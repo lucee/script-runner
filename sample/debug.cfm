@@ -28,9 +28,9 @@
 	systemOutput( "", true );
 	systemOutput( "--------- Environment variables (lucee*) -------", true );
 	for ( e in server.system.environment ){
-		if ( left( e, 5 ) eq "lucee" ){
-			if ( e contains "password" or e contains "secret" ){
-				systemOutput( e & ": (not shown coz it's a password)", true );
+		if ( left( e, 5 ) eq "lucee" or left( e, 6 ) eq "github" ){
+			if ( e contains "password" or e contains "secret" or e contains "token"){
+				systemOutput( e & ": (not shown coz it's a password/secret/token)", true );
 			} else {
 				systemOutput( e & ": " & server.system.environment[ e ], true );
 			}
