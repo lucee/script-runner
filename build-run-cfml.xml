@@ -48,7 +48,7 @@
 					}
 
 					if ( len( webroot ) eq 0 )
-						webroot = getDirectoryFromPath(getCurrentTemplatePath()) & "sample" );
+						webroot = getDirectoryFromPath( getCurrentTemplatePath() & "sample" );
 
 
 					admin
