@@ -28,6 +28,8 @@
 	<!-- scripts can be run as an include, or via internalRequest (default) which picks up any Application.cfc -->
 	<property name="executeScriptByInclude" value=""/>
 
+	<property name="githubToken" value=""/>
+
 	<property name="luceeCdnUrl" value="https://cdn.lucee.org"/>
 	<property name="luceeUpdateProvider" value="https://update.lucee.org/rest/update/provider/latest/"/>
 	<property name="luceeVersion" value="6.0.3.1"/>
@@ -121,6 +123,7 @@
 			<jvmarg value="-Dlucee.extensions=${extensions}"/>
 			<jvmarg value="-Dlucee.mapping.first=true"/>
 			<jvmarg value="-Dcompile=${compile}"/>
+			<jvmarg value="-DgithubToken=${githubToken}"/>
 			<!--
 			<jvmarg value="-Dlucee.cli.printExceptions=true"/>
 			-->

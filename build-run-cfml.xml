@@ -127,6 +127,14 @@
 						return params;
 					}
 
+					function safelyReportVar(name, value){
+						if ( arguments.name contains "password" or arguments.name contains "secret" or arguments.name contains "token"){
+							systemOutput( arguments.name & ": (not shown coz it's a password/secret/token)", true );
+						} else {
+							systemOutput( arguments.name & ": " & arguments.value, true );
+						}
+					}
+
 					function loadPassedVariables() localmode=true {
 						// TODO this is windows only and doesn't work
 						var params =  parseAntParams( server.system.environment.ANT_CMD_LINE_ARGS?: "" );
@@ -141,7 +149,8 @@
 							systemOutput( "", true );
 							systemOutput( "Variables", true);
 							loop collection=passedVariables key="_k" value="_v" {
-								systemOutput( chr(9) & _k & ": "  & _v , true);
+								systemOutput( chr(9) );
+								safelyReportVar( _k , _v );
 							}
 							systemOutput( "", true );
 						}

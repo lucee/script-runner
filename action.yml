@@ -37,6 +37,10 @@ inputs:
   postCleanup:
     description: purge the directory Lucee is deployed into after finishing
     default: "true"
+  github_token:
+    description: 'GitHub API Access Token.'
+    default: ${{ github.token }}
+    required: false
 runs:
   using: "composite"
   steps:
@@ -56,7 +60,7 @@ runs:
           -Dextensions="${{ inputs.extensions }}" -DextensionDir="${{ inputs.extensionDir }}" \
           -Dcompile="${{ inputs.compile }}" -Ddebugger="${{ inputs.debugger }}" \
           -DluceeCFConfig="${{inputs.luceeCFConfig}}" \
-          -DpreCleanup="${{inputs.preCleanup}}" -DpostCleanup="${{inputs.postCleanup}}"
+          -DpreCleanup="${{inputs.preCleanup}}" -DpostCleanup="${{inputs.postCleanup}}" -DgithubToken="${{inputs.github_token}}"
       shell: bash
     - if: runner.os == 'Windows'
       run: |
@@ -74,5 +78,5 @@ runs:
          -Dwebroot="${{ inputs.webroot }}" -Dexecute="${{ inputs.execute }}" -Dextensions="${{ inputs.extensions }}" ^
          -DextensionDir="${{ inputs.extensionDir }}" -Dcompile="${{ inputs.compile }}" ^
          -Ddebugger="${{ inputs.debugger }}" -DluceeCFConfig="${{inputs.luceeCFConfig}}" ^
-         -DpreCleanup="${{inputs.preCleanup}}" -DpostCleanup="${{inputs.postCleanup}}"
+         -DpreCleanup="${{inputs.preCleanup}}" -DpostCleanup="${{inputs.postCleanup}}" -DgithubToken="${{inputs.github_token}}"
       shell: cmd

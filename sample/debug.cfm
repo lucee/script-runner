@@ -1,39 +1,41 @@
 <cfscript>
+
+	function safelyReportVar(name, value){
+		if ( arguments.name contains "password" or arguments.name contains "secret" or arguments.name contains "token"){
+			systemOutput( arguments.name & ": (not shown coz it's a password/secret/token)", true );
+		} else {
+			systemOutput( arguments.name & ": " & arguments.value, true );
+		}
+	}
+
 	systemOutput( "Hello World, Lucee Script Engine Runner, Debugger", true );
 	systemOutput( "#getCurrentTemplatePath()#", true );
 	systemOutput( "", true );
 	systemOutput( "--------- variables -------", true );
+
 	loop collection=#variables# key="key" value="value"{
-		systemOutput( "#key#=#serializeJson(value)#", true );
+		safelyReportVar( key, serializeJson( value ) );
 	}
 
 	systemOutput( "", true );
 	systemOutput( "--------- URL variables -------", true );
 	loop collection=#url# key="key" value="value"{
-		systemOutput( "url.#key#=#serializeJson(value)#", true );
+		safelyReportVar( key, serializeJson( value ) );
 	}
 
 	systemOutput( "", true );
 	systemOutput( "--------- System properties (lucee.*) -------", true );
 	for ( p in server.system.properties ){
 		if ( listFirst( p, "." ) eq "lucee" ){
-			if ( p contains "password" or p contains "secret"){
-				systemOutput( p & ": (not shown coz it's a password)", true );
-			} else {
-				systemOutput( p & ": " & server.system.properties[ p ], true );
-			}
+			safelyReportVar( p, server.system.properties[ p ] );
 		}
 	}
 
 	systemOutput( "", true );
-	systemOutput( "--------- Environment variables (lucee*) -------", true );
+	systemOutput( "--------- Environment variables (lucee*,github*) -------", true );
 	for ( e in server.system.environment ){
 		if ( left( e, 5 ) eq "lucee" or left( e, 6 ) eq "github" ){
-			if ( e contains "password" or e contains "secret" or e contains "token"){
-				systemOutput( e & ": (not shown coz it's a password/secret/token)", true );
-			} else {
-				systemOutput( e & ": " & server.system.environment[ e ], true );
-			}
+			safelyReportVar( e, server.system.environment[ e ] );
 		}
 	}
 
