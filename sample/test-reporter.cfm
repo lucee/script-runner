@@ -18,7 +18,9 @@
 		throw "no github token?";
 	// fetch artifacts, try and find the last one for this branch
 	artifacts_url = "https://api.github.com/repos/#repo#/actions/artifacts?per_page=100&name=#artifact_name#";
-	http url=artifacts_url throwOnError=true;
+	http url=artifacts_url throwOnError=true {
+		httpparam type="header" name="Authorization" value="Bearer #github_token#";
+	};
 	if ( !isJson( cfhttp.filecontent ) )
 		throw( message="Github REST API didn't return json", details=cfhttp.filecontent );
 	response = deserializeJSON( cfhttp.filecontent );
@@ -30,9 +32,12 @@
 			if (response.artifacts[a].expired)
 				break;
 			artifact_zip = getTempFile(getTempDirectory(),"github-artifact", "zip");
-			http url=response.artifacts[a].archive_download_url path=getTempDirectory() file=listLast(artifact_zip,"\/") throwOnError=true {
+			http url=response.artifacts[a].archive_download_url path=getTempDirectory() file=listLast(artifact_zip,"\/") {
 				httpparam type="header" name="Authorization" value="Bearer #github_token#";
 			};
+			systemOutput( cfhttp, true );
+			if ( cfhttp.error )
+				throw "download artifact failed [#cfhttp.errordetail#]";
 			// dump(cfhttp);
 			tmp_dir = getTempDirectory() & createUUID();
 			directoryCreate( tmp_dir );
