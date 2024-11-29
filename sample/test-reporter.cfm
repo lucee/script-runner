@@ -9,10 +9,11 @@
 	}
 	repo = server.system.environment.GITHUB_REPOSITORY;
 	branch = server.system.environment.GITHUB_REF_NAME;
-	artifact_name = variables.artifact_name ?: "";
-	artifact_filter = variables.artifact_name ?: "";
-	github_token = variables.githubToken ?: "";
-	variance_threshold = variables.variance_threshold ?: 10; // threshold for reporting test case different performance
+	artifact_name = url.artifact_name ?: "";
+	artifact_filter = url.artifact_name ?: "";
+	variance_threshold = url.variance_threshold ?: 10; // threshold for reporting test case different performance
+
+	github_token = url.githubToken ?: "";
 	if ( !len( github_token ) )
 		throw "no github token?";
 	// fetch artifacts, try and find the last one for this branch
