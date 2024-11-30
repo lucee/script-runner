@@ -66,7 +66,7 @@
 			tmp_dir = getTempDirectory() & createUUID();
 			directoryCreate( tmp_dir );
 			Extract("zip", artifact_zip, tmp_dir);
-			artifacts_files = directoryList( path=dir, filter=file_filter, sort="datelastmodifed desc" );
+			artifacts_files = directoryList( path=tmp_dir, filter=file_filter, sort="datelastmodifed desc" );
 			if ( len( artifacts_files ) eq 1){
 				ArrayAppend( files, artifacts_files[ 1 ] );
 				ArrayAppend( artifact_found, response.artifacts[a].workflow_run.id );
