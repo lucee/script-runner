@@ -39,7 +39,7 @@
 				see https://learn.microsoft.com/en-au/azure/container-registry/container-registry-faq#authentication-information-isn-t-given-in-the-correct-format-on-direct-rest-api-calls
 			*/
 
-			http url=response.artifacts[a].archive_download_url redirect=false {
+			http url=response.artifacts[a].archive_download_url redirect=false encodeurl=false {
 				httpparam type="header" name="Accept" value="application/vnd.github+json";
 				httpparam type="header" name="Authorization" value="Bearer #github_token#";
 				httpparam type="header" name="X-GitHub-Api-Version" value="2022-11-28";
@@ -54,7 +54,7 @@
 				maybe https://luceeserver.atlassian.net/browse/LDEV-3537 ?
 			*/
 			systemOutput(cfhttp.responseHeader.location, true);
-			http url=cfhttp.responseHeader.location path=getTempDirectory() file=listLast(artifact_zip,"\/") {
+			http url=cfhttp.responseHeader.location path=getTempDirectory() file=listLast(artifact_zip,"\/") encodeurl=false {
 				//httpparam type="header" name="Accept" value="application/vnd.github+json";
 				//httpparam type="header" name="Authorization" value="Bearer #github_token#";
 				//httpparam type="header" name="X-GitHub-Api-Version" value="2022-11-28";
