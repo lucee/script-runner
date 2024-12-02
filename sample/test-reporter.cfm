@@ -124,7 +124,7 @@
 			"version": json.CFMLEngineVersion ?: "",
 			"branch": json.runMetaData.workflow_run.head_branch,
 			"commit": json.runMetaData.workflow_run.head_sha,
-			"commitUrl": commit_base_hef & json.runMetaData.workflow_run.head_sha;
+			"commitUrl": commit_base_hef & json.runMetaData.workflow_run.head_sha,
 			"commitDate": ParseDatetime(json.runMetaData.created_at),
 			"totalDuration": json.totalDuration,
 			"stats": queryToStruct(q, "suiteSpec")
