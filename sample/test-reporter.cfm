@@ -28,7 +28,7 @@
 	if ( !isJson( cfhttp.filecontent ) )
 		throw( message="Github REST API didn't return json", details=cfhttp.filecontent );
 	response = deserializeJSON( cfhttp.filecontent );
-	artifact_found = [];
+	artifacts_found = [];
 	for (a = 1; a LTE len(response.artifacts); a++ ){
 		if (response.artifacts[a].name contains artifact_filter
 			&& response.artifacts[a].workflow_run.head_branch eq branch){
@@ -77,18 +77,18 @@
 				json = deserializeJson( fileRead( artifacts_files[ 1 ] ) );
 				json["runMetaData"] = response.artifacts[a];
 				fileWrite( artifacts_files[ 1 ], serializeJSON( json ) );
-				ArrayAppend( artifact_found, response.artifacts[a].workflow_run.id );
+				ArrayAppend( artifacts_found, response.artifacts[a].workflow_run.id );
 			} else {
 				systemOutput("No results found in artifacts missing? ")
 			}
-			if (len(artifact_found) gt 1)
+			if (len(artifacts_found) gt 1)
 				break; // report on the last two runs if available
 		}
 	}
-	if ( !len( artifact_found ) ) {
-		systemOutput("No artifacts found for branch [#branch#]? ")
-	} else if ( !arrayContains(artifact_found, server.system.environment.GITHUB_RUN_ID ) ){
-		throw "No artifacts from the current run [#server.system.environment.GITHUB_RUN_ID#] found [#artifact_found.toJson()#]";
+	if ( !len( artifacts_found ) ) {
+		throw "No artifacts found for branch [#branch#]? ";
+	} else if ( !arrayContains(artifacts_found, server.system.environment.GITHUB_RUN_ID ) ){
+		throw "No artifacts from the current run [#server.system.environment.GITHUB_RUN_ID#] found [#artifacts_found.toJson()#]";
 	}
 
 	if ( len( files ) gt 2 ){
