@@ -9,9 +9,9 @@
 	}
 	repo = server.system.environment.GITHUB_REPOSITORY;
 	branch = server.system.environment.GITHUB_REF_NAME;
-	artifact_name = url.artifact_name ?: "";
-	artifact_filter = url.artifact_name ?: "";
-	variance_threshold = url.variance_threshold ?: 10; // threshold for reporting test case different performance
+	artifact_name = server.system.environment.artifact_name ?: "";
+	artifact_filter = server.system.environment.artifact_name ?: "";
+	variance_threshold = server.system.environment.variance_threshold ?: 10; // threshold for reporting test case different performance
 
 	date_mask = "dd-mmm-yy HH:nn";
 
@@ -278,8 +278,8 @@
 					arrayAppend( row, "");
 			}
 			arrayAppend( row, numberFormat( test.diff ) );
-			_logger( "|" & arrayToList( row, "|" ) & "|" );
 			if ( abs( test.diff ) gt variance_threshold ){
+				_logger( "|" & arrayToList( row, "|" ) & "|" );
 				html &= "<tr>";
 				arrayEach(row, function(el){
 					html &= "<td>" & htmlCodeFormat( el );
