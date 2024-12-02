@@ -10,8 +10,7 @@
 	repo = server.system.environment.GITHUB_REPOSITORY;
 	branch = server.system.environment.GITHUB_REF_NAME;
 	artifact_name = server.system.environment.artifact_name ?: "";
-	artifact_filter = server.system.environment.artifact_name ?: "";
-	variance_threshold = server.system.environment.variance_threshold ?: 10; // threshold for reporting test case different performance
+	artifact_filter = server.system.environment.artifact_name ?: variance_threshold = server.system.variance_threshold ?: 10; // threshold for reporting test case different performance
 
 	date_mask = "dd-mmm-yy HH:nn";
 
@@ -139,7 +138,7 @@
 
 	_logger( "## Summary Report" );
 	_logger( "" );
-	_logger( "Reporting tests with a variance of ~[#url.variance_threshold#] ms between runs" );
+	_logger( "Reporting tests with a variance of ~[#variance_threshold#] ms between runs" );
 
 
 	echo(reportRuns( runs ));
