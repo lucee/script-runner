@@ -13,6 +13,8 @@
 	artifact_filter = url.artifact_name ?: "";
 	variance_threshold = url.variance_threshold ?: 10; // threshold for reporting test case different performance
 
+	commit_base_hef = "https://github.com/#repo#/commit/";
+
 	github_token = url.githubToken ?: "";
 	if ( !len( github_token ) )
 		throw "no github token?";
@@ -28,7 +30,7 @@
 	for (a = 1; a LTE len(response.artifacts); a++ ){
 		if (response.artifacts[a].name contains artifact_filter
 			&& response.artifacts[a].workflow_run.head_branch eq branch){
-			// systemOutput(response.artifacts[a], true);
+			systemOutput(response.artifacts[a], true);
 			if (response.artifacts[a].expired)
 				break;
 			artifact_zip = getTempFile(getTempDirectory(),"github-artifact", "zip");
@@ -45,7 +47,7 @@
 				httpparam type="header" name="X-GitHub-Api-Version" value="2022-11-28";
 			}; // this will return a 302
 
-			systemOutput( cfhttp, true );
+			//systemOutput( cfhttp, true );
 			if ( cfhttp.errorDetail does not contain "302 Found" )
 				throw "get download artifact url failed [#cfhttp.errordetail#]";
 
@@ -59,7 +61,7 @@
 				//httpparam type="header" name="Authorization" value="Bearer #github_token#";
 				//httpparam type="header" name="X-GitHub-Api-Version" value="2022-11-28";
 			};
-			systemOutput( cfhttp, true );
+			//systemOutput( cfhttp, true );
 			if ( cfhttp.error )
 				throw "download artifact failed [#cfhttp.errordetail#]";
 			// dump(cfhttp);
@@ -69,6 +71,10 @@
 			artifacts_files = directoryList( path=tmp_dir, filter=file_filter, sort="datelastmodifed desc" );
 			if ( len( artifacts_files ) eq 1){
 				ArrayAppend( files, artifacts_files[ 1 ] );
+				// add artifact metadata to json
+				json = deserializeJson( fileRead( artifacts_files[ 1 ] ) );
+				json["runMetaData"] = response.artifacts[a];
+				fileWrite( artifacts_files[ 1 ], serializeJSON( json ) );
 				ArrayAppend( artifact_found, response.artifacts[a].workflow_run.id );
 			} else {
 				systemOutput("No results found in artifacts missing? ")
@@ -113,12 +119,18 @@
 			}
 		}
 
-		arrayAppend( runs, {
-			"java": json.javaVersion,
-			"version": json.CFMLEngineVersion,
+		run = {
+			"java": json.javaVersion ?: "",
+			"version": json.CFMLEngineVersion ?: "",
+			"branch": json.runMetaData.workflow_run.head_branch,
+			"commit": json.runMetaData.workflow_run.head_sha,
+			"commitUrl": commit_base_hef & json.runMetaData.workflow_run.head_sha;
+			"commitDate": ParseDatetime(json.runMetaData.created_at),
 			"totalDuration": json.totalDuration,
 			"stats": queryToStruct(q, "suiteSpec")
-		});
+		};
+
+		arrayAppend( runs, duplicate( run ) );
 	};
 
 	if ( IsEmpty( runs ) ) throw "No json report files found?";
@@ -164,8 +176,8 @@
 			}
 		); // fastest to slowest
 
-		var hdr = [ "Version", "Java", "Time" ];
-		var div = [ "---", "---", "---:" ];
+		var hdr = [ "Version", "Java", "Branch", "Date", "Time" ];
+		var div = [ "---", "---", "---", "---", "---:" ];
 		_logger( "" );
 		_logger( "|" & arrayToList( hdr, "|" ) & "|" );
 		_logger( "|" & arrayToList( div, "|" ) & "|" );
@@ -175,6 +187,8 @@
 		loop array=runs item="local.run" {
 			ArrayAppend( row, run.version );
 			ArrayAppend( row, run.java );
+			ArrayAppend( row, run.branch );
+			ArrayAppend( row, DateTimeFormat( run.commitDate ) );
 			arrayAppend( row, numberFormat( run.totalDuration ) );
 			_logger( "|" & arrayToList( row, "|" ) & "|" );
 			html &= "<tr><td>" & arrayToList( row, "<td>" ) & "</tr>";
@@ -195,7 +209,8 @@
 		arraySort(
 			sortedRuns,
 			function (e1, e2){
-				return compare(e1.version & e1.java, e2.version & e2.java);
+				return dateCompare( e1.commitDate, e2.commitDate );
+				//return compare(e1.version & e1.java, e2.version & e2.java);
 			}
 		); // sort runs by oldest version to newest version
 
@@ -203,7 +218,10 @@
 		var hdr = [ "Suite", "Spec" ];
 		var div = [ "---", "---" ];
 		loop array=sortedRuns item="local.run" {
-			arrayAppend( hdr, run.version & " " & listFirst(run.java,".") );
+			if ( len ( run.version ) gt 0 )
+				arrayAppend( hdr, run.version & " " & listFirst( run.java,"." ) );
+			else
+				arrayAppend( hdr, REReplace( wrap( DateTimeFormat( run.commitDate ), 11 ), "\n", " ", "ALL") );
 			arrayAppend( div, "---:" ); // right align as they are all numeric
 		}
 
@@ -246,8 +264,8 @@
 		var row = [];
 		loop array=suiteSpecs item="test" {
 			// force long names to wrap without breaking markdown
-			ArrayAppend( row, REReplace( wrap(test.suite, 70), "\n", " ", "ALL") );
-			ArrayAppend( row, REReplace( wrap(test.Spec, 70), "\n", " ", "ALL") );
+			ArrayAppend( row, REReplace( wrap( test.suite, 70 ), "\n", " ", "ALL") );
+			ArrayAppend( row, REReplace( wrap( test.Spec, 70 ), "\n", " ", "ALL") );
 			loop array=sortedRuns item="local.run" {
 				if ( structKeyExists( run.stats, test.suiteSpec ) )
 					arrayAppend( row, numberFormat( run.stats[test.suiteSpec].time ) );
