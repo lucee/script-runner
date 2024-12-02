@@ -1,5 +1,4 @@
 <cfscript>
-	file_filter="*-results.json";
 	files = [];
 	out = [];
 
@@ -10,7 +9,9 @@
 	repo = server.system.environment.GITHUB_REPOSITORY;
 	branch = server.system.environment.GITHUB_REF_NAME;
 	artifact_name = server.system.environment.artifact_name ?: "";
-	artifact_filter = server.system.environment.artifact_name ?: variance_threshold = server.system.variance_threshold ?: 10; // threshold for reporting test case different performance
+	artifact_filter = server.system.environment.artifact_filter ?: "";
+	artifact_filer_filter = server.system.environment.artifact_file_filter ?: "*-results.json";
+	variance_threshold = server.system.variance_threshold ?: 10; // threshold for reporting test case different performance
 
 	date_mask = "dd-mmm-yy HH:nn";
 
@@ -69,7 +70,7 @@
 			tmp_dir = getTempDirectory() & createUUID();
 			directoryCreate( tmp_dir );
 			Extract("zip", artifact_zip, tmp_dir);
-			artifacts_files = directoryList( path=tmp_dir, filter=file_filter, sort="datelastmodifed desc" );
+			artifacts_files = directoryList( path=tmp_dir, filter=artifact_file_filter, sort="datelastmodifed desc" );
 			if ( len( artifacts_files ) eq 1){
 				ArrayAppend( files, artifacts_files[ 1 ] );
 				// add artifact metadata to json
