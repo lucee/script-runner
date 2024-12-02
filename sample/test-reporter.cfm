@@ -13,6 +13,8 @@
 	artifact_filter = url.artifact_name ?: "";
 	variance_threshold = url.variance_threshold ?: 10; // threshold for reporting test case different performance
 
+	date_mask = "dd-mmm-yy HH:nn";
+
 	commit_base_hef = "https://github.com/#repo#/commit/";
 
 	github_token = url.githubToken ?: "";
@@ -136,6 +138,9 @@
 	if ( IsEmpty( runs ) ) throw "No json report files found?";
 
 	_logger( "## Summary Report" );
+	_logger( "" );
+	_logger( "Reporting tests with a variance of ~[#url.variance_threshold#] ms between runs" );
+
 
 	echo(reportRuns( runs ));
 
@@ -188,7 +193,7 @@
 			ArrayAppend( row, run.version );
 			ArrayAppend( row, run.java );
 			ArrayAppend( row, run.branch );
-			ArrayAppend( row, DateTimeFormat( run.commitDate ) );
+			ArrayAppend( row, DateTimeFormat( run.commitDate, date_mask ) );
 			arrayAppend( row, numberFormat( run.totalDuration ) );
 			_logger( "|" & arrayToList( row, "|" ) & "|" );
 			html &= "<tr><td>" & arrayToList( row, "<td>" ) & "</tr>";
@@ -221,7 +226,7 @@
 			if ( len ( run.version ) gt 0 )
 				arrayAppend( hdr, run.version & " " & listFirst( run.java,"." ) );
 			else
-				arrayAppend( hdr, REReplace( wrap( DateTimeFormat( run.commitDate ), 11 ), "\n", " ", "ALL") );
+				arrayAppend( hdr, REReplace( wrap( DateTimeFormat( run.commitDate, date_mask ), 11 ), "\n", " ", "ALL") );
 			arrayAppend( div, "---:" ); // right align as they are all numeric
 		}
 
@@ -254,9 +259,9 @@
 
 		arraySort(
 			suiteSpecs,
-			function (e1, e2){
-				if (e1.diff gt e2.diff) return -1;
-				else if (e1.diff lt e2.diff) return 1;
+			function ( e1, e2 ){
+				if ( e1.diff gt e2.diff ) return -1;
+				else if ( e1.diff lt e2.diff ) return 1;
 				return 0;
 			}
 		); // sort by performance regression
@@ -264,8 +269,8 @@
 		var row = [];
 		loop array=suiteSpecs item="test" {
 			// force long names to wrap without breaking markdown
-			ArrayAppend( row, REReplace( wrap( test.suite, 70 ), "\n", " ", "ALL") );
-			ArrayAppend( row, REReplace( wrap( test.Spec, 70 ), "\n", " ", "ALL") );
+			ArrayAppend( row, REReplace( wrap( test.suite, 60 ), "\n", " ", "ALL") );
+			ArrayAppend( row, REReplace( wrap( test.Spec, 60 ), "\n", " ", "ALL") );
 			loop array=sortedRuns item="local.run" {
 				if ( structKeyExists( run.stats, test.suiteSpec ) )
 					arrayAppend( row, numberFormat( run.stats[test.suiteSpec].time ) );
