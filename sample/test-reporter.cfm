@@ -277,7 +277,7 @@
 			if ( abs( test.diff ) gt variance_threshold ){
 				html &= "<tr>";
 				arrayEach(row, function(el){
-					html &= "<td>" & encodeForHtml( el );
+					html &= "<td>" & htmlCodeFormat( el );
 				});
 				html &= "</tr>";
 			}
