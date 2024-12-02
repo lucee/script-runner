@@ -10,7 +10,7 @@
 	branch = server.system.environment.GITHUB_REF_NAME;
 	artifact_name = server.system.environment.artifact_name ?: "";
 	artifact_filter = server.system.environment.artifact_filter ?: "";
-	artifact_filer_filter = server.system.environment.artifact_file_filter ?: "*-results.json";
+	artifact_file_filter = server.system.environment.artifact_file_filter ?: "*-results.json";
 	variance_threshold = server.system.variance_threshold ?: 10; // threshold for reporting test case different performance
 
 	date_mask = "dd-mmm-yy HH:nn";
