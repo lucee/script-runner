@@ -126,6 +126,14 @@
 			-->
 			<jvmarg value="-Dlucee.base.config=${luceeCFConfig}"/>
 			<jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5000" if:true="${debugger}"/>
+			<jvmarg value="-XX:+UnlockExperimentalVMOptions" if:true="${UseEpsilonGC}"/>
+			<jvmarg value="-XX:+UseEpsilonGC" if:true="${UseEpsilonGC}"/>
+			<jvmarg value="-XX:+AlwaysPreTouch" if:true="${UseEpsilonGC}"/>
+			<jvmarg value="-Xmx4096m" if:true="${UseEpsilonGC}"/>
+			<jvmarg value="-Xms4096m" if:true="${UseEpsilonGC}"/>
+			<jvmarg value="-XX:StartFlightRecording=disk=true,dumponexit=true,filename=${temp}/../${luceeFilename}.jfr,maxsize=1024m,maxage=1d,settings=profile,path-to-gc-roots=true" if:true="${FlightRecording}"/>
+			<jvmarg value="-XX:FlightRecorderOptions=stackdepth=128" if:true="${FlightRecording}"/>
+
 
 			<!--
 			<jvmarg value="-Xdebug"/>
