@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project default="all" basedir="." name="run-cfml">
 	<macrodef name="echots">
-		<attribute name="message"/>
+		<attribute name="message" />
 		<sequential>
 			<local name="timestamp" />
 			<tstamp>
@@ -11,42 +11,45 @@
 		</sequential>
 	</macrodef>
 	<target name="all">
-		<echots message="Lucee Starting"/>
+		<echots message="Lucee Starting" />
 		<script language="CFML">
 		<![CDATA[
 				systemOutput( "---------- #DateTimeFormat(now(),'yyyy-mm-dd HH:nn:ss')# - Lucee Started ----------", true);
 				systemOutput( "#server.lucee.version#", true );
 
-				request.adminPassword="admin";
+				param name="adminPassword" default="admin";
+				request.adminPassword = adminPassword;
 				request.errorThrown = false;
 
 				try {
+					param name="setAdminPassword" default="true";
+					if ( setAdminPassword ) {
 
-					// set a password for the admin
-					try {
-						admin
-							action="updatePassword"
-							type="web"
-							oldPassword=""
-							newPassword="#request.adminPassword#";
-						systemOutput( "Set Web admin password", true );
-					}
-					catch(e){
-						systemOutput( e.message, true ); // may exist from previous execution
-					}
+						// set a password for the admin
+						try {
+							admin
+								action="updatePassword"
+								type="web"
+								oldPassword=""
+								newPassword="#request.adminPassword#";
+							systemOutput( "Set Web admin password", true );
+						}
+						catch(e){
+							systemOutput( e.message, true ); // may exist from previous execution
+						}
 
-					try {
-						admin
-							action="updatePassword"
-							type="server"
-							oldPassword=""
-							newPassword="#request.adminPassword#";
-						systemOutput( "Set Server admin password", true );
+						try {
+							admin
+								action="updatePassword"
+								type="server"
+								oldPassword=""
+								newPassword="#request.adminPassword#";
+							systemOutput( "Set Server admin password", true );
+						}
+						catch(e){
+							systemOutput( e.message, true ); // may exist from previous execution
+						}
 					}
-					catch(e){
-						systemOutput( e.message, true ); // may exist from previous execution
-					}
-
 
 					admin
 						action="updateMapping"
@@ -59,18 +62,24 @@
 						primary="physical"
 						trusted="no";
 
-					admin
-						action="getMappings"
-						type="web"
-						password="#request.adminPassword#"
-						returnVariable="mappings";
-
 					systemOutput( "-------------- Mappings --------------", true );
-					loop query="mappings" {
-						systemOutput("#mappings.virtual# #chr( 9 )# #mappings.strPhysical# "
-							& ( len( mappings.strArchive ) ? "[#mappings.strArchive#] " : "" )
-							& ( len( mappings.inspect ) ? "(#mappings.inspect#)" : ""), true );
+					try {
+						admin
+							action="getMappings"
+							type="web"
+							password="#request.adminPassword#"
+							returnVariable="mappings";
+
+						loop query="mappings" {
+							systemOutput("#mappings.virtual# #chr( 9 )# #mappings.strPhysical# "
+								& ( len( mappings.strArchive ) ? "[#mappings.strArchive#] " : "" )
+								& ( len( mappings.inspect ) ? "(#mappings.inspect#)" : ""), true );
+						}
+
+					} catch( e ){
+						systemOutput( e.message, true );
 					}
+					systemOutput( "ExpandPath( '/' ) #chr(9)# #ExpandPath( '/' )#" , true );
 
 					param name="extensionDir" default="";
 					if ( len( extensionDir)  ){
@@ -195,6 +204,6 @@
 				}
 		]]>
 		</script>
-		<echots message="Lucee Stopping"/>
+		<echots message="Lucee Stopping" />
 	</target>
 </project>
