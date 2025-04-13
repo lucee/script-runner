@@ -16,7 +16,7 @@ You can specify:
 
 - Lucee version `-DluceeVersion=` default `6.0.3.1`, (ie. 6.3.0.1, light-6.3.0.1, zero-6.3.0.1 )
 - Lucee version by query `-DluceeVersionQuery="5.4/stable/light` ( optional overrides luceeVersion, (version)/(stable/rc/snapshot)/(jar,light/zero) )
-- Webroot `-Dwebroot=`  (default `tests/`)
+- Webroot `-Dwebroot=`  (default `tests/`) on Windows, avoid a trailing \ as that is treated as an escape character causes script runner to fail
 - CFML Script to run, `-Dexecute=` (default `/index.cfm`)
 - run script via include or _internalRequest (which runs the Application.cfc if present, default ) `-DexecuteScriptByInclude="true"`
 - any extra extensions `-Dextensions=` (default ``)
