@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Local JAR Support**: Added `luceeJar` parameter to test locally built Lucee JARs without publishing
+  - Accepts full path to a local JAR file
+  - Overrides both `luceeVersion` and `luceeVersionQuery`
+  - Perfect for Lucee core developers testing builds
 - **Unique Working Directories**: Added `uniqueWorkingDir` parameter with three modes:
   - `false` (default): Uses standard temp/lucee directory
   - `true`: Auto-generates unique directory with timestamp and random ID

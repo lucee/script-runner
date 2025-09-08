@@ -45,6 +45,7 @@ You can specify:
 
 - Lucee version `-DluceeVersion=` default `6.2.2.91`, (ie. 6.2.2.91, light-6.2.2.91, zero-6.2.2.91 )
 - Lucee version by query `-DluceeVersionQuery="5.4/stable/light` ( optional overrides luceeVersion, (version)/(stable/rc/snapshot)/(jar,light/zero) )
+- Local Lucee JAR `-DluceeJar="/path/to/lucee.jar"` (optional, overrides both luceeVersion and luceeVersionQuery, perfect for testing locally built JARs)
 - Webroot `-Dwebroot=`  (default `tests/`) on Windows, avoid a trailing \ as that is treated as an escape character causes script runner to fail
 - CFML Script to run, `-Dexecute=` (default `/index.cfm`)
 - run script via include or _internalRequest (which runs the Application.cfc if present, default ) `-DexecuteScriptByInclude="true"`
@@ -73,6 +74,9 @@ ant -buildfile=D:\work\script-runner\build.xml -Dwebroot=. -Dexecute=/test/index
 
 # Testing with specific Lucee version
 ant -buildfile=D:\work\script-runner\build.xml -DluceeVersionQuery=6.2/stable/jar -Dwebroot=D:\work\lucee-spreadsheet -Dexecute=/test/index.cfm
+
+# Testing with a locally built Lucee JAR (for Lucee developers)
+ant -buildfile=D:\work\script-runner\build.xml -DluceeJar="D:\work\lucee\loader\target\lucee.jar" -Dwebroot=D:\work\lucee-spreadsheet -Dexecute=/test/index.cfm
 
 # With unique working directory for concurrent runs
 ant -buildfile=D:\work\script-runner\build.xml -DuniqueWorkingDir=true -Dwebroot=D:\work\lucee-spreadsheet -Dexecute=/test/index.cfm
@@ -206,6 +210,7 @@ To use as a GitHub Action, to run the PDF tests after building the PDF Extension
         execute: /bootstrap-tests.cfm
         luceeVersion: ${{ env.luceeVersion }}
         luceeVersionQuery: 5.4/stable/light (optional, overrides luceeVersion )
+        luceeJar: /path/to/local/lucee.jar (optional, overrides both luceeVersion and luceeVersionQuery)
         extensions: (optional list of extension guids to install)
         extensionDir: ${{ github.workspace }}/dist (for testing building an extension with CI)
         antFlags: -d or -v etc (optional, good for debugging any ant issues)

@@ -7,6 +7,9 @@ inputs:
   luceeVersionQuery:
     description: Lucee Version Query to run (overrides luceeVersion, i.e. "5.4/stable/light", "6.1/snapshot/jar", "6/stable/zero" )
     default: ""
+  luceeJar:
+    description: Full path to a local Lucee JAR file (overrides both luceeVersion and luceeVersionQuery)
+    default: ""
   webroot:
     description: webroot directory
     required: true
@@ -48,6 +51,7 @@ runs:
         pwd
         echo luceeVersion ${{ inputs.luceeVersion }}
         echo luceeVersionQuery ${{ inputs.luceeVersionQuery }}
+        echo luceeJar ${{ inputs.luceeJar }}
         echo webroot ${{ inputs.webroot }}
         echo execute ${{ inputs.execute }}
         echo extensions ${{ inputs.extensions }}
@@ -55,6 +59,7 @@ runs:
         echo compile ${{ inputs.compile }}
         echo luceeCFConfig:${{inputs.luceeCFConfig}}
         ant -buildfile "${{ github.action_path }}/build.xml" ${{ inputs.antFlags }} -DluceeVersion="${{ inputs.luceeVersion }}" -DluceeVersionQuery="${{ inputs.luceeVersionQuery }}" \
+          -DluceeJar="${{ inputs.luceeJar }}" \
           -Dwebroot="${{ inputs.webroot }}" -Dexecute="${{ inputs.execute }}" \
           -Dextensions="${{ inputs.extensions }}" -DextensionDir="${{ inputs.extensionDir }}" \
           -Dcompile="${{ inputs.compile }}" -Ddebugger="${{ inputs.debugger }}" \
@@ -67,6 +72,7 @@ runs:
         pwd
         echo luceeVersion ${{ inputs.luceeVersion }}
         echo luceeVersionQuery ${{ inputs.luceeVersionQuery }}
+        echo luceeJar ${{ inputs.luceeJar }}
         echo webroot ${{ inputs.webroot }}
         echo execute ${{ inputs.execute }}
         echo extensions ${{ inputs.extensions }}
@@ -75,6 +81,7 @@ runs:
         echo luceeCFConfig:${{inputs.luceeCFConfig}}
         ant -buildfile "${{ github.action_path }}/build.xml" ${{ inputs.antFlags }} ^
         -DluceeVersion="${{ inputs.luceeVersion }}" -DluceeVersionQuery="${{ inputs.luceeVersionQuery }}" ^
+         -DluceeJar="${{ inputs.luceeJar }}" ^
          -Dwebroot="${{ inputs.webroot }}" -Dexecute="${{ inputs.execute }}" -Dextensions="${{ inputs.extensions }}" ^
          -DextensionDir="${{ inputs.extensionDir }}" -Dcompile="${{ inputs.compile }}" ^
          -Ddebugger="${{ inputs.debugger }}" -DluceeCFConfig="${{inputs.luceeCFConfig}}" ^

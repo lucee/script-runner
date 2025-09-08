@@ -35,9 +35,10 @@
 	<property name="luceeUpdateProvider" value="https://update.lucee.org/rest/update/provider/latest/"/>
 	<property name="luceeVersion" value="6.2.2.91"/>
 	<property name="luceeVersionQuery" value=""/> <!-- i.e. 5.4/stable/jar -->
+	<property name="luceeJar" value=""/> <!-- full path to a local Lucee JAR file -->
 
 	<!--<target name="core" depends="setEnv,check-lucee-jar,check-lucee-lco,download-lucee-jar,download-lucee-lco,run-cfml">-->
-	<target name="core" depends="setEnv,use-version,query-version,set-unique-working-dir,check-lucee-jar,download-lucee-jar,run-cfml">
+	<target name="core" depends="setEnv,use-local-jar,use-version,query-version,set-unique-working-dir,check-lucee-jar,download-lucee-jar,run-cfml">
 	</target>
 
 	<target name="setEnv">
@@ -49,6 +50,20 @@
 		<condition property="no-query-version">
 			<length string="${luceeVersionQuery}" trim="true" length="0"/>
 		</condition>
+		<condition property="use-local-jar">
+			<not><equals arg1="${luceeJar}" arg2=""/></not>
+		</condition>
+	</target>
+	
+	<target name="use-local-jar" if="use-local-jar">
+		<available file="${luceeJar}" property="local.jar.exists"/>
+		<fail message="Local Lucee JAR not found: ${luceeJar}" unless="local.jar.exists"/>
+		<basename property="luceeFilename" file="${luceeJar}"/>
+		<property name="useLuceeVersion" value="${luceeFilename}"/>
+		<property name="luceeJarPath" value="${luceeJar}"/>
+		<echo message="Using local Lucee JAR: ${luceeJar}"/>
+		<!-- Set flag to skip download -->
+		<property name="skip.download" value="true"/>
 	</target>
 
 	<target name="set-unique-working-dir" depends="use-version,query-version">
@@ -93,35 +108,44 @@
 		</sequential>
 	</target>
 
-	<target name="use-version" if="no-query-version">
+	<target name="use-version" if="no-query-version" unless="use-local-jar">
 		<property name="useLuceeVersion" value="${luceeVersion}"/>
 		<property name="luceeVersionUrl" value="${luceeCdnUrl}/lucee-${useLuceeVersion}.jar"/>
 		<property name="luceeFilename" value="lucee-${useLuceeVersion}.jar"/>
 	</target>
 
 	<target name="query-version" unless="no-query-version">
-		<echo message="Getting latest Lucee version for ${luceeVersionQuery}" />
-		<tempfile property="temp.file" suffix=".txt" prefix="lucee-version-query" deleteonexit="true"/>
-		<get src="${luceeUpdateProvider}${luceeVersionQuery}/filename" dest="${temp.file}" verbose="true"/>
-		<loadfile property="luceeFilename" srcFile="${temp.file}">
-			<filterchain>
-				<tokenfilter>
-					<replaceregex pattern='"' replace="" flags="g"/>
-				</tokenfilter>
-			</filterchain>
-		</loadfile>
-		<property name="luceeVersionUrl" value="${luceeCdnUrl}/${luceeFilename}"/>
-		<property name="useLuceeVersion" value="${luceeFilename}"/>
-		<echo message="Lucee version: ${useLuceeVersion}" />
+		<sequential unless:set="use-local-jar">
+			<echo message="Getting latest Lucee version for ${luceeVersionQuery}" />
+			<tempfile property="temp.file" suffix=".txt" prefix="lucee-version-query" deleteonexit="true"/>
+			<get src="${luceeUpdateProvider}${luceeVersionQuery}/filename" dest="${temp.file}" verbose="true"/>
+			<loadfile property="luceeFilename" srcFile="${temp.file}">
+				<filterchain>
+					<tokenfilter>
+						<replaceregex pattern='"' replace="" flags="g"/>
+					</tokenfilter>
+				</filterchain>
+			</loadfile>
+			<property name="luceeVersionUrl" value="${luceeCdnUrl}/${luceeFilename}"/>
+			<property name="useLuceeVersion" value="${luceeFilename}"/>
+			<echo message="Lucee version: ${useLuceeVersion}" />
+		</sequential>
 	</target>
 
 	<target name="check-lucee-jar">
-		<available file="${cache}/${luceeFilename}" property="lucee.jar.present"/>
+		<condition property="lucee.jar.present">
+			<or>
+				<isset property="use-local-jar"/>
+				<available file="${cache}/${luceeFilename}"/>
+			</or>
+		</condition>
 	</target>
 
 	<target name="download-lucee-jar" unless="lucee.jar.present">
-		<mkdir dir="${cache}"/>
-		<get src="${luceeVersionUrl}" dest="${cache}/${luceeFilename}" verbose="true"/>
+		<sequential unless:set="use-local-jar">
+			<mkdir dir="${cache}"/>
+			<get src="${luceeVersionUrl}" dest="${cache}/${luceeFilename}" verbose="true"/>
+		</sequential>
 	</target>
 
 	<target name="run-cfml">
@@ -211,9 +235,14 @@
 		<echoproperties destFile="${temp}/lucee/ant_args.properties"/>
 		-->
 
+		<!-- Determine JAR path: use local JAR if provided, otherwise use cached JAR -->
+		<condition property="lucee.jar.path" value="${luceeJar}" else="${cache}/${luceeFilename}">
+			<isset property="use-local-jar"/>
+		</condition>
+		
 		<java classname="org.apache.tools.ant.launch.Launcher" dir="${tempDir}/lucee" fork="true" failonerror="true" errorproperty="errorOut" resultproperty="resultOut">
 			<classpath path="${java.class.path}">
-				<pathelement location="${cache}/${luceeFilename}"/>
+				<pathelement location="${lucee.jar.path}"/>
 				<pathelement path="${runtime_classpath}"/>
 			</classpath>
 			<arg value="-f"/>
