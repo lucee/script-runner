@@ -9,6 +9,7 @@
 
 	<property name="cache" location="lucee-download-cache"/>
 	<property name="temp" location="temp"/>
+	<property name="uniqueWorkingDir" value="false"/>
 	<property name="ant" location="${rootDir}/ant"/>
 	<property name="webroot" location="sample"/>
 	<property name="execute" value="/index.cfm"/>
@@ -24,17 +25,19 @@
 	<property name="preCleanup" value="true"/>
 	<!-- delete the Lucee working dir afterwards -->
 	<property name="postCleanup" value="true"/>
+	<!-- addtional jvm properties-->
+	<property name="jvmProperties" value=""/>
 
 	<!-- scripts can be run as an include, or via internalRequest (default) which picks up any Application.cfc -->
 	<property name="executeScriptByInclude" value=""/>
 
 	<property name="luceeCdnUrl" value="https://cdn.lucee.org"/>
 	<property name="luceeUpdateProvider" value="https://update.lucee.org/rest/update/provider/latest/"/>
-	<property name="luceeVersion" value="6.0.3.1"/>
+	<property name="luceeVersion" value="6.2.2.91"/>
 	<property name="luceeVersionQuery" value=""/> <!-- i.e. 5.4/stable/jar -->
 
 	<!--<target name="core" depends="setEnv,check-lucee-jar,check-lucee-lco,download-lucee-jar,download-lucee-lco,run-cfml">-->
-	<target name="core" depends="setEnv,use-version,query-version,check-lucee-jar,download-lucee-jar,run-cfml">
+	<target name="core" depends="setEnv,use-version,query-version,set-unique-working-dir,check-lucee-jar,download-lucee-jar,run-cfml">
 	</target>
 
 	<target name="setEnv">
@@ -46,6 +49,48 @@
 		<condition property="no-query-version">
 			<length string="${luceeVersionQuery}" trim="true" length="0"/>
 		</condition>
+	</target>
+
+	<target name="set-unique-working-dir" depends="use-version,query-version">
+		<!-- Check if uniqueWorkingDir is set and not "false" -->
+		<condition property="use.unique.dir">
+			<and>
+				<isset property="uniqueWorkingDir"/>
+				<not>
+					<equals arg1="${uniqueWorkingDir}" arg2="false"/>
+				</not>
+			</and>
+		</condition>
+		
+		<sequential if:true="${use.unique.dir}">
+			<!-- Check if uniqueWorkingDir is "true" (auto-generate) or a custom path -->
+			<condition property="is.auto.unique">
+				<equals arg1="${uniqueWorkingDir}" arg2="true"/>
+			</condition>
+			
+			<!-- Auto-generate unique directory if uniqueWorkingDir="true" -->
+			<sequential if:true="${is.auto.unique}">
+				<tstamp>
+					<format property="timestamp" pattern="yyyyMMdd-HHmmss"/>
+					<format property="randomId" pattern="SSS" offset="0" unit="millisecond"/>
+				</tstamp>
+				<property name="uniqueTempDir" location="temp-unique/lucee-${useLuceeVersion}-${timestamp}-${randomId}"/>
+				<echo message="Using auto-generated unique working directory: ${uniqueTempDir}"/>
+			</sequential>
+			
+			<!-- Use custom path if uniqueWorkingDir is not "true" -->
+			<sequential unless:true="${is.auto.unique}">
+				<property name="uniqueTempDir" location="${uniqueWorkingDir}"/>
+				<echo message="Using custom working directory: ${uniqueTempDir}"/>
+			</sequential>
+			
+			<!-- Race condition check: fail if directory already exists -->
+			<fail message="Race condition detected: Working directory ${uniqueTempDir} already exists!">
+				<condition>
+					<available file="${uniqueTempDir}" type="dir"/>
+				</condition>
+			</fail>
+		</sequential>
 	</target>
 
 	<target name="use-version" if="no-query-version">
@@ -80,8 +125,66 @@
 	</target>
 
 	<target name="run-cfml">
+		<condition property="tempDir" value="${uniqueTempDir}" else="${temp}">
+			<isset property="uniqueTempDir"/>
+		</condition>
+		
+		<!-- Check for Windows trailing backslash issue -->
+		<condition property="isWindows">
+			<os family="windows"/>
+		</condition>
+		<fail message="Webroot path '${webroot}' ends with backslash (\) which causes escape character issues on Windows. Please remove the trailing backslash or use forward slash (/)." if:true="${isWindows}">
+			<condition>
+				<matches pattern=".*\\$" string="${webroot}"/>
+			</condition>
+		</fail>
+		
+		<!-- Build proper file path for execute script validation -->
+		<condition property="execute.path.needs.separator">
+			<and>
+				<not><matches pattern=".*[/\\]$" string="${webroot}"/></not>
+				<not><matches pattern="^[/\\].*" string="${execute}"/></not>
+			</and>
+		</condition>
+		<condition property="execute.fullpath" value="${webroot}/${execute}" else="${webroot}${execute}">
+			<isset property="execute.path.needs.separator"/>
+		</condition>
+		
+		<!-- Check if execute script exists under webroot (catch Git Bash path conversion and other issues) -->
+		<fail message="Execute script '${execute}' not found under webroot '${webroot}' (looking for: ${execute.fullpath}). If using Git Bash and your execute parameter starts with '/', this may be due to path conversion. Solutions: 1) Use cmd instead of Git Bash, 2) Use double slash '//debug.cfm', 3) Set MSYS_NO_PATHCONV=1, or ensure the script exists in the webroot.">
+			<condition>
+				<and>
+					<not>
+						<available file="${execute.fullpath}" type="file"/>
+					</not>
+					<not>
+						<equals arg1="${execute}" arg2=""/>
+					</not>
+				</and>
+			</condition>
+		</fail>
+		
+		<!-- Extract basename of webroot for JFR filename -->
+		<basename property="webroot.name" file="${webroot}"/>
+		
+		<!-- Clean execute path (remove leading slash/backslash) for JFR filename -->
+		<loadresource property="execute.clean">
+			<propertyresource name="execute"/>
+			<filterchain>
+				<tokenfilter>
+					<replaceregex pattern="^[/\\]" replace="" flags="g"/>
+				</tokenfilter>
+			</filterchain>
+		</loadresource>
+		
+		<!-- Ensure we have timestamp for JFR filename (may already be set from unique dir logic) -->
+		<tstamp unless:set="timestamp">
+			<format property="timestamp" pattern="yyyyMMdd-HHmmss"/>
+		</tstamp>
+		
 		<echo message="Java: ${java.version}, ${java.home}" />
 		<echo message="Lucee: ${useLuceeVersion}" />
+		<echo message="Working Dir: ${tempDir}" />
 		<echo message="Webroot: ${webroot}" />
 		<echo message="Execute: ${execute}" />
 		<echo message="ExtensionDir: ${extensionDir}" />
@@ -89,15 +192,18 @@
 		<echo message="executeScriptByInclude: ${executeScriptByInclude}" />
 		<echo message="luceeCFConfig: ${luceeCFConfig}" />
 		<echo message="javaDebugger: ${debugger}" />
+		<echo message="jvmProperties: ${jvmProperties}" />
 
 		<echo message="" />
 		<!-- execute CFML testcases -->
-		<delete dir="${temp}" if:true="${preCleanup}"/>
-		<mkdir dir="${temp}"/>
-		<mkdir dir="${temp}/lucee"/>
-		<mkdir dir="${temp}/lucee/web"/>
-		<mkdir dir="${temp}/lucee/lucee-server/context"/>
-		<mkdir dir="${temp}/lucee/lucee-server/deploy"/>
+		<delete dir="${tempDir}" if:true="${preCleanup}"/>
+		<mkdir dir="${tempDir}"/>
+		<mkdir dir="${tempDir}/lucee"/>
+		<mkdir dir="${tempDir}/lucee/web"/>
+		<mkdir dir="${tempDir}/lucee/lucee-server/context"/>
+		<mkdir dir="${tempDir}/lucee/lucee-server/deploy"/>
+		<!-- create logs directory for JFR files -->
+		<mkdir dir="${basedir}/logs"/>
 		<!-- set a default admin password
 		<echo file="${temp}/lucee/lucee-server/context/password.txt" append="false">admin</echo>
 		-->
@@ -105,15 +211,15 @@
 		<echoproperties destFile="${temp}/lucee/ant_args.properties"/>
 		-->
 
-		<java classname="org.apache.tools.ant.launch.Launcher" dir="${temp}/lucee" fork="true" failonerror="true" errorproperty="errorOut">
+		<java classname="org.apache.tools.ant.launch.Launcher" dir="${tempDir}/lucee" fork="true" failonerror="true" errorproperty="errorOut" resultproperty="resultOut">
 			<classpath path="${java.class.path}">
 				<pathelement location="${cache}/${luceeFilename}"/>
 				<pathelement path="${runtime_classpath}"/>
 			</classpath>
 			<arg value="-f"/>
-			<arg value="../../build-run-cfml.xml"/>
-			<jvmarg value="-Dlucee.base.dir=${temp}/lucee"/>
-			<jvmarg value="-Dlucee.web.dir=${temp}/lucee/web"/>
+			<arg value="${basedir}/build-run-cfml.xml"/>
+			<jvmarg value="-Dlucee.base.dir=${tempDir}/lucee"/>
+			<jvmarg value="-Dlucee.web.dir=${tempDir}/lucee/web"/>
 			<jvmarg value="-Dwebroot=${webroot}"/>
 			<jvmarg value="-Dexecute=${execute}"/>
 			<jvmarg value="-DexecuteScriptByInclude=${executeScriptByInclude}"/>
@@ -129,13 +235,15 @@
 			<jvmarg value="-XX:+UnlockExperimentalVMOptions" if:true="${UseEpsilonGC}"/>
 			<jvmarg value="-XX:+UseEpsilonGC" if:true="${UseEpsilonGC}"/>
 			<jvmarg value="-XX:+AlwaysPreTouch" if:true="${UseEpsilonGC}"/>
-			<jvmarg value="-Xmx4096m" if:true="${UseEpsilonGC}"/>
-			<jvmarg value="-Xms4096m" if:true="${UseEpsilonGC}"/>
-			<jvmarg value="-XX:StartFlightRecording=disk=true,dumponexit=true,filename=${temp}/../${luceeFilename}.jfr,maxsize=1024m,maxage=1d,settings=profile,path-to-gc-roots=true" if:true="${FlightRecording}"/>
+			<jvmarg value="-XX:StartFlightRecording=disk=true,dumponexit=true,filename=${basedir}/logs/${timestamp}-lucee-${useLuceeVersion}-${webroot.name}-${execute.clean}-j${ant.java.version}.jfr,maxsize=1024m,maxage=1d,settings=profile,path-to-gc-roots=true" if:true="${FlightRecording}"/>
 			<jvmarg value="-XX:FlightRecorderOptions=stackdepth=128" if:true="${FlightRecording}"/>
-
+			<jvmarg value="-XX:+PrintGCDetails" if:true="${PrintGCDetails}"/>
+			<jvmarg value="-Dproperties.filename=${jvmProperties}" if:set="jvmProperties"/>
+			<jvmarg value="-XX:+UnlockExperimentalVMOptions" />
 
 			<!--
+
+			<jvmarg value="-XX:+UseCompactObjectHeaders" />
 			<jvmarg value="-Xdebug"/>
 			<jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"/>
 			<jvmarg value="-Djava.net.useSystemProxies=true"/>
@@ -146,7 +254,7 @@
 			-->
 		</java>
 		<echo>${errorOut}</echo>
-		<delete dir="${temp}" if:true="${postCleanup}"/>
+		<delete dir="${tempDir}" if:true="${postCleanup}"/>
 		<echo message="Finished!" />
 	</target>
 </project>

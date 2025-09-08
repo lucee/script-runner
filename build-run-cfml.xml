@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project default="all" basedir="." name="run-cfml">
+	
+	<!-- Protection: This file should only be called from build.xml -->
+	<fail message="ERROR: build-run-cfml.xml should not be run directly! Use build.xml instead.">
+		<condition>
+			<not>
+				<isset property="lucee.base.dir"/>
+			</not>
+		</condition>
+	</fail>
+	
 	<macrodef name="echots">
 		<attribute name="message"/>
 		<sequential>
@@ -163,7 +173,7 @@
 
 					try {
 						if ( executeScriptByInclude eq "true"){
-							include template="#execute#";
+							//include template="#execute#";
 						} else {
 							_internalRequest(
 								template = execute,

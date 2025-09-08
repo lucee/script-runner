@@ -2,7 +2,7 @@ name: 'Lucee Script Runner'
 description: 'Run Lucee via the command line'
 inputs:
   luceeVersion:
-    description: Lucee Version to run, i.e. "light-6.0.3.1", "5.4.6.9", "zero-6.0.3.1"
+    description: Lucee Version to run, i.e. "light-6.2.2.91", "5.4.6.9", "zero-6.2.2.91"
     required: true
   luceeVersionQuery:
     description: Lucee Version Query to run (overrides luceeVersion, i.e. "5.4/stable/light", "6.1/snapshot/jar", "6/stable/zero" )
@@ -37,6 +37,9 @@ inputs:
   postCleanup:
     description: purge the directory Lucee is deployed into after finishing
     default: "true"
+  uniqueWorkingDir:
+    description: 'Working directory mode: "false" (default temp/lucee), "true" (auto-generate unique), or custom path (e.g., "/custom/work")'
+    default: "false"
 runs:
   using: "composite"
   steps:
@@ -56,7 +59,8 @@ runs:
           -Dextensions="${{ inputs.extensions }}" -DextensionDir="${{ inputs.extensionDir }}" \
           -Dcompile="${{ inputs.compile }}" -Ddebugger="${{ inputs.debugger }}" \
           -DluceeCFConfig="${{inputs.luceeCFConfig}}" \
-          -DpreCleanup="${{inputs.preCleanup}}" -DpostCleanup="${{inputs.postCleanup}}"
+          -DpreCleanup="${{inputs.preCleanup}}" -DpostCleanup="${{inputs.postCleanup}}" \
+          -DuniqueWorkingDir="${{inputs.uniqueWorkingDir}}"
       shell: bash
     - if: runner.os == 'Windows'
       run: |
@@ -74,5 +78,6 @@ runs:
          -Dwebroot="${{ inputs.webroot }}" -Dexecute="${{ inputs.execute }}" -Dextensions="${{ inputs.extensions }}" ^
          -DextensionDir="${{ inputs.extensionDir }}" -Dcompile="${{ inputs.compile }}" ^
          -Ddebugger="${{ inputs.debugger }}" -DluceeCFConfig="${{inputs.luceeCFConfig}}" ^
-         -DpreCleanup="${{inputs.preCleanup}}" -DpostCleanup="${{inputs.postCleanup}}"
+         -DpreCleanup="${{inputs.preCleanup}}" -DpostCleanup="${{inputs.postCleanup}}" ^
+         -DuniqueWorkingDir="${{inputs.uniqueWorkingDir}}"
       shell: cmd
