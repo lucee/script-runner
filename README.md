@@ -123,6 +123,28 @@ wait
 
 Each instance will use a unique working directory named `temp-unique/lucee-{VERSION}-{TIMESTAMP}-{RANDOM}` to prevent conflicts.
 
+## Writing Output in Headless Mode
+
+When running CFML scripts in headless mode (without a web server), you should use `systemOutput()` instead of `writeOutput()` to see output in the console:
+
+```cfm
+// ✅ Correct - outputs to console in headless mode
+systemOutput("Processing started...", true);  // true adds newline
+systemOutput("Item #i# processed", true);
+
+// ❌ Wrong - writeOutput() won't display in console
+writeOutput("This won't be visible");
+
+// For debugging, you can also use:
+systemOutput(serializeJSON(myData, "struct"), true);
+```
+
+**Key Points:**
+- `systemOutput()` writes directly to the console (stdout)
+- `writeOutput()` is for HTTP response output and won't show in headless mode
+- The second parameter `true` adds a newline after the output
+- Use `systemOutput()` for progress updates, debugging, and results
+
 ## Troubleshooting
 
 ### Common Issues on Windows
