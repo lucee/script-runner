@@ -21,13 +21,16 @@ The script-runner can be used from any directory by specifying the build file lo
 
 ```bash
 # From the script-runner directory (simple)
-ant -Dwebroot="/path/to/your/project" -Dexecute="/yourscript.cfm"
+ant -Dwebroot="/path/to/your/project" -Dexecute="yourscript.cfm"
 
 # From your project directory (recommended for external projects)
-ant -buildfile="/path/to/script-runner/build.xml" -Dwebroot="." -Dexecute="/yourscript.cfm"
+ant -buildfile="/path/to/script-runner/build.xml" -Dwebroot="." -Dexecute="yourscript.cfm"
 
 # From any directory with absolute paths
-ant -buildfile="C:\tools\script-runner\build.xml" -Dwebroot="C:\work\myproject" -Dexecute="/test.cfm"
+ant -buildfile="C:\tools\script-runner\build.xml" -Dwebroot="C:\work\myproject" -Dexecute="test.cfm"
+
+# execute a script below the webroot
+ant -buildfile="C:\tools\script-runner\build.xml" -Dwebroot="C:\work\myproject" -Dexecute="extended/index.cfm"
 ```
 
 **Key Points:**
@@ -47,7 +50,7 @@ You can specify:
 - Lucee version by query `-DluceeVersionQuery="5.4/stable/light` ( optional overrides luceeVersion, (version)/(stable/rc/snapshot)/(jar,light/zero) )
 - Local Lucee JAR `-DluceeJar="/path/to/lucee.jar"` (optional, overrides both luceeVersion and luceeVersionQuery, perfect for testing locally built JARs)
 - Webroot `-Dwebroot=`  (default `tests/`) on Windows, avoid a trailing \ as that is treated as an escape character causes script runner to fail
-- CFML Script to run, `-Dexecute=` (default `/index.cfm`)
+- CFML Script to run, `-Dexecute=` (default `index.cfm`) a relative path the webroot, no leading `/` is needed, some bash shells like git bash on windows get's confused and tries to expand that to a full path
 - run script via include or _internalRequest (which runs the Application.cfc if present, default ) `-DexecuteScriptByInclude="true"`
 - any extra extensions `-Dextensions=` (default ``)
 - manual extension install (`*.lex`) from a directory `-DextensionDir=` (default ``)
@@ -115,9 +118,9 @@ Multiple script-runner instances can be run simultaneously using unique working 
 
 ```bash
 # Run multiple instances concurrently
-ant -DuniqueWorkingDir="true" -Dexecute="/test1.cfm" &
-ant -DuniqueWorkingDir="true" -Dexecute="/test2.cfm" &
-ant -DuniqueWorkingDir="true" -Dexecute="/test3.cfm" &
+ant -DuniqueWorkingDir="true" -Dexecute="test1.cfm" &
+ant -DuniqueWorkingDir="true" -Dexecute="test2.cfm" &
+ant -DuniqueWorkingDir="true" -Dexecute="test3.cfm" &
 wait
 ```
 
@@ -149,48 +152,48 @@ systemOutput(serializeJSON(myData, "struct"), true);
 
 ### Common Issues on Windows
 
-**Problem**: Build fails with path-related errors  
+**Problem**: Build fails with path-related errors
 **Solution**: Avoid trailing backslashes in webroot paths:
 ```bash
 # ❌ Wrong - trailing backslash causes escape issues
-ant -Dwebroot="C:\work\myproject\" 
+ant -Dwebroot="C:\work\myproject\"
 
 # ✅ Correct - no trailing backslash
-ant -Dwebroot="C:\work\myproject" 
+ant -Dwebroot="C:\work\myproject"
 ant -Dwebroot="C:/work/myproject/"  # Forward slashes work too
 ```
 
-**Problem**: "Could not locate build file" from other directories  
+**Problem**: "Could not locate build file" from other directories
 **Solution**: Use absolute path to build.xml:
 ```bash
 # ❌ Wrong - looking for build.xml in current directory
 ant -Dwebroot="." -Dexecute="/test.cfm"
 
 # ✅ Correct - specify script-runner location
-ant -buildfile="C:\tools\script-runner\build.xml" -Dwebroot="." -Dexecute="/test.cfm"
+ant -buildfile="C:\tools\script-runner\build.xml" -Dwebroot="." -Dexecute="test.cfm"
 ```
 
-**Problem**: "File not found" for CFML scripts  
+**Problem**: "File not found" for CFML scripts
 **Solution**: Check webroot and execute paths:
 ```bash
 # Verify your paths - execute is relative to webroot
-ant -buildfile="/path/to/script-runner/build.xml" -Dwebroot="/your/project" -Dexecute="/debug.cfm"
+ant -buildfile="/path/to/script-runner/build.xml" -Dwebroot="/your/project" -Dexecute="debug.cfm"
 ```
 
-**Problem**: "No shell found" or quote/escape errors on Windows  
+**Problem**: "No shell found" or quote/escape errors on Windows
 **Solution**: Use proper quote formatting for Windows command line:
 ```bash
 # ❌ Wrong - excessive escaping or nested quotes
 ant -buildfile=\"d:\work\script-runner\" -Dwebroot=\"D:\work\project\"
 
 # ✅ Correct - Windows Command Prompt (no quotes needed for paths without spaces)
-ant -buildfile=d:\work\script-runner\build.xml -Dwebroot=D:\work\project -Dexecute=/test.cfm
+ant -buildfile=d:\work\script-runner\build.xml -Dwebroot=D:\work\project -Dexecute=test.cfm
 
 # ✅ Correct - Windows with spaces in paths (use quotes around entire parameter)
-ant "-buildfile=C:\Program Files\script-runner\build.xml" "-Dwebroot=C:\My Projects\test" -Dexecute=/test.cfm
+ant "-buildfile=C:\Program Files\script-runner\build.xml" "-Dwebroot=C:\My Projects\test" -Dexecute=test.cfm
 
 # ✅ Correct - PowerShell (use single quotes to avoid variable expansion)
-ant -buildfile='d:\work\script-runner\build.xml' -Dwebroot='D:\work\project' -Dexecute='/test.cfm'
+ant -buildfile='d:\work\script-runner\build.xml' -Dwebroot='D:\work\project' -Dexecute='test.cfm'
 ```
 
 **Important Windows Tips:**
@@ -201,9 +204,9 @@ ant -buildfile='d:\work\script-runner\build.xml' -Dwebroot='D:\work\project' -De
 
 If no webroot is specfied, you can run the provided debug script, to see which extensions are available and all the env / sys properties
 
-`ant -buildfile="C:\work\script-runner" -Dexecute="/debug.cfm"`
+`ant -buildfile="C:\work\script-runner" -Dexecute="debug.cfm"`
 
-`ant -buildfile="C:\work\script-runner" -Dexecute="/debug.cfm" -DluceeVersion="light-6.2.2.91"` (`light` has no bundled extensions, `zero` has no extension or admin)
+`ant -buildfile="C:\work\script-runner" -Dexecute="debug.cfm" -DluceeVersion="light-6.2.2.91"` (`light` has no bundled extensions, `zero` has no extension or admin)
 
 ## As a GitHub Action
 
@@ -229,7 +232,7 @@ To use as a GitHub Action, to run the PDF tests after building the PDF Extension
       uses: lucee/script-runner@main
       with:
         webroot: ${{ github.workspace }}/lucee/test
-        execute: /bootstrap-tests.cfm
+        execute: bootstrap-tests.cfm
         luceeVersion: ${{ env.luceeVersion }}
         luceeVersionQuery: 5.4/stable/light (optional, overrides luceeVersion )
         luceeJar: /path/to/local/lucee.jar (optional, overrides both luceeVersion and luceeVersionQuery)
@@ -278,5 +281,5 @@ pipelines:
           - git clone https://github.com/lucee/lucee
           - export testLabels="PDF"
           - echo $testLabels
-          - ant -buildfile script-runner/build.xml -DluceeVersion="light-6.2.2.91" -Dwebroot="$BITBUCKET_CLONE_DIR/lucee/test" -DextensionDir="$BITBUCKET_CLONE_DIR/dist" -Dexecute="/bootstrap-tests.cfm" -DtestAdditional="$BITBUCKET_CLONE_DIR/tests"
+          - ant -buildfile script-runner/build.xml -DluceeVersion="light-6.2.2.91" -Dwebroot="$BITBUCKET_CLONE_DIR/lucee/test" -DextensionDir="$BITBUCKET_CLONE_DIR/dist" -Dexecute="bootstrap-tests.cfm" -DtestAdditional="$BITBUCKET_CLONE_DIR/tests"
 ```

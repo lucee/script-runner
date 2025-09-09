@@ -175,7 +175,7 @@
 		</condition>
 		
 		<!-- Check if execute script exists under webroot (catch Git Bash path conversion and other issues) -->
-		<fail message="Execute script '${execute}' not found under webroot '${webroot}' (looking for: ${execute.fullpath}). If using Git Bash and your execute parameter starts with '/', this may be due to path conversion. Solutions: 1) Use cmd instead of Git Bash, 2) Use double slash '//debug.cfm', 3) Set MSYS_NO_PATHCONV=1, or ensure the script exists in the webroot.">
+		<fail message="Execute script '${execute}' not found under webroot '${webroot}' (looking for: ${execute.fullpath}). If using Git Bash, try: 1) Remove leading slash: -Dexecute=&quot;test.cfm&quot; instead of &quot;/test.cfm&quot;, 2) Use cmd.exe instead of Git Bash, or 3) Ensure the script exists in the webroot.">
 			<condition>
 				<and>
 					<not>
