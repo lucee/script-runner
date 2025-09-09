@@ -48,7 +48,7 @@ You can specify:
 
 - Lucee version `-DluceeVersion=` default `6.2.2.91`, (ie. 6.2.2.91, light-6.2.2.91, zero-6.2.2.91 )
 - Lucee version by query `-DluceeVersionQuery="5.4/stable/light` ( optional overrides luceeVersion, (version)/(stable/rc/snapshot)/(jar,light/zero) )
-- Local Lucee JAR `-DluceeJar="/path/to/lucee.jar"` (optional, overrides both luceeVersion and luceeVersionQuery, perfect for testing locally built JARs)
+- Local Lucee JAR `-DluceeJar="/full-path/to/lucee.jar"` (optional, overrides both luceeVersion and luceeVersionQuery, perfect for testing locally built JARs)
 - Webroot `-Dwebroot=`  (default `tests/`) on Windows, avoid a trailing \ as that is treated as an escape character causes script runner to fail
 - CFML Script to run, `-Dexecute=` (default `index.cfm`) a relative path the webroot, no leading `/` is needed, some bash shells like git bash on windows get's confused and tries to expand that to a full path
 - run script via include or _internalRequest (which runs the Application.cfc if present, default ) `-DexecuteScriptByInclude="true"`
