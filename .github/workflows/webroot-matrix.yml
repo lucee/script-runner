@@ -92,39 +92,24 @@ jobs:
           LUCEE_VERSION_QUERY: 7/all/zero
         working-directory: ${{ github.workspace }}/tests/webroot
         run: |
-          set webroots=.\ D:\\a\\script-runner\\script-runner\\tests\\webroot
+          set webroots=""." "D:\a\script-runner\script-runner\tests\webroot"
           set executes=index.cfm test.cfm sub/test.cfm
           echo webroots=%webroots%
           echo executes=%executes%
-            cd
-            for %%w in (.) do (
-              for %%e in (index.cfm test.cfm sub/test.cfm) do (
-                echo ant -v -buildfile=..\..\build.xml "-Dwebroot=%%w" "-Dexecute=%%e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
-                ant -v -buildfile=..\..\build.xml "-Dwebroot=%%w" "-Dexecute=%%e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
-                if errorlevel 1 (
-                  set cmd=ant -buildfile=build.xml "-Dwebroot=%%w" "-Dexecute=%%e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
-                  echo ## Platform: windows-latest ^| Shell: cmd>> %GITHUB_STEP_SUMMARY%
-                  echo (cd): %cd%>> %GITHUB_STEP_SUMMARY%
-                  echo ### %cmd%>> %GITHUB_STEP_SUMMARY%
-                  echo FAILED: %%w / %%e:>> %GITHUB_STEP_SUMMARY%
-                  echo.>> %GITHUB_STEP_SUMMARY%
-                )
+          for %%w in (%webroots%) do (
+            for %%e in (%executes%) do (
+              echo ant -v -buildfile=..\..\build.xml "-Dwebroot=%%w" "-Dexecute=%%e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
+              ant -v -buildfile=..\..\build.xml "-Dwebroot=%%w" "-Dexecute=%%e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
+              if errorlevel 1 (
+                set cmd=ant -buildfile=build.xml "-Dwebroot=%%w" "-Dexecute=%%e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
+                echo ## Platform: windows-latest ^| Shell: cmd>> %GITHUB_STEP_SUMMARY%
+                echo (cd): %cd%>> %GITHUB_STEP_SUMMARY%
+                echo ### %cmd%>> %GITHUB_STEP_SUMMARY%
+                echo FAILED: %%w / %%e:>> %GITHUB_STEP_SUMMARY%
+                echo.>> %GITHUB_STEP_SUMMARY%
               )
             )
-            for %%w in ("D:\a\script-runner\script-runner\tests\webroot") do (
-              for %%e in (index.cfm test.cfm sub/test.cfm) do (
-                echo ant -v -buildfile=..\..\build.xml "-Dwebroot=%%w" "-Dexecute=%%e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
-                ant -v -buildfile=..\..\build.xml "-Dwebroot=%%w" "-Dexecute=%%e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
-                if errorlevel 1 (
-                  set cmd=ant -buildfile=build.xml "-Dwebroot=%%w" "-Dexecute=%%e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
-                  echo ## Platform: windows-latest ^| Shell: cmd>> %GITHUB_STEP_SUMMARY%
-                  echo (cd): %cd%>> %GITHUB_STEP_SUMMARY%
-                  echo ### %cmd%>> %GITHUB_STEP_SUMMARY%
-                  echo FAILED: %%w / %%e:>> %GITHUB_STEP_SUMMARY%
-                  echo.>> %GITHUB_STEP_SUMMARY%
-                )
-              )
-            )
+          )
 
   windows-pwsh:
     name: Windows PowerShell
