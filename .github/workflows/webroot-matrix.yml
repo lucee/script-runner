@@ -98,7 +98,7 @@ jobs:
           for %%w in (%webroots%) do (
             for %%e in (%executes%) do (
 
-              echo ant -buildfile ..\..\build.xml -Dwebroot="%%w" -Dexecute=%%e -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
+              echo ant -buildfile=..\..\build.xml -Dwebroot="%%w" -Dexecute=%%e -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
               ant -v -buildfile ..\..\build.xml -Dwebroot=%%w -Dexecute=%%e -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
               if errorlevel 1 (
                 set cmd=ant -buildfile build.xml -Dwebroot=%%w -Dexecute="%%e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
@@ -133,7 +133,7 @@ jobs:
           foreach ($w in $webroots) {
             foreach ($e in $executes) {
               $luceeVersionQuery = $env:LUCEE_VERSION_QUERY
-              $cmd = "ant -buildfile ../../build.xml -Dwebroot=`"$w`" -Dexecute=$e -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$luceeVersionQuery"
+              $cmd = "ant -buildfile=../../build.xml -Dwebroot=`"$w`" -Dexecute=$e -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$luceeVersionQuery"
               Write-Host $cmd
               $LASTEXITCODE = 0
               iex $cmd
