@@ -1,16 +1,44 @@
 name: Webroot Handling Matrix
-
 on:
   push:
   pull_request:
   workflow_dispatch:
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-
-
 jobs:
+  macos-bash:
+    name: MacOS Bash
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Run all webroot/execute combinations
+        shell: bash
+        env:
+          LUCEE_VERSION_QUERY: 7/all/zero
+        run: |
+          luceeVersionQuery="${LUCEE_VERSION_QUERY:-7/all/zero}"
+          webroots=( '.' './webroot' 'webroot' "${{ github.workspace }}/webroot" '"./webroot"' '"${{ github.workspace }}/webroot"' )
+          executes=( 'index.cfm' 'test.cfm' 'sub/test.cfm' )
+          for w in "${webroots[@]}"; do
+            for e in "${executes[@]}"; do
+              echo "Testing webroot=$w execute=$e"
+              result=$(ant -buildfile build.xml -Dwebroot=$w -Dexecute="$e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery="$luceeVersionQuery" 2>&1)
+              if [ $? -ne 0 ]; then
+                cmd="ant -buildfile build.xml -Dwebroot=$w -Dexecute=\"$e\" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$luceeVersionQuery"
+                platform="macos-latest"
+                shell="bash"
+                echo -e "## Platform: $platform | Shell: $shell\n### $cmd\n\`\`\`\nFAILED: $w / $e\n$result\n\`\`\`\n" >> "$GITHUB_STEP_SUMMARY"
+              fi
+            done
+          done
+        working-directory: ${{ github.workspace }}
+
   test:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -41,63 +69,10 @@ jobs:
           LUCEE_VERSION_QUERY: 7/all/zero
         run: ant -Dwebroot=webroot -Dexecute=test.cfm -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$LUCEE_VERSION_QUERY
       # Add more steps for other argument combinations if needed
-  ubuntu-pwsh:
-    name: Ubuntu PowerShell
+  ubuntu-bash:
+    name: Ubuntu Bash
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-      - name: Run all webroot/execute combinations
-        shell: pwsh
-        env:
-          LUCEE_VERSION_QUERY: 7/all/zero
-        run: |
-          $webroots = @('.', './webroot', 'webroot', "${{ github.workspace }}/webroot", '"./webroot"', '"${{ github.workspace }}/webroot"')
-          $executes = @('index.cfm', 'test.cfm', 'sub/test.cfm')
-          foreach ($w in $webroots) {
-            foreach ($e in $executes) {
-              Write-Host "Testing webroot=$w execute=$e"
-              $luceeVersionQuery = $env:LUCEE_VERSION_QUERY
-              $antArgs = @(
-                '-buildfile', 'build.xml',
-                "-Dwebroot=$w",
-                "-Dexecute=$e",
-                '-DpreCleanup=false',
-                '-DpostCleanup=false',
-                "-DluceeVersionQuery=$luceeVersionQuery"
-              )
-              Write-Host "CMD: ant $($antArgs -join ' ')"
-              $result = & ant @antArgs 2>&1
-              if ($LASTEXITCODE -ne 0) {
-                $cmd = "ant -buildfile build.xml -Dwebroot=$w -Dexecute=$e -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$env:LUCEE_VERSION_QUERY"
-                $platform = "macos-latest"
-                shell: pwsh
-                run: |
-                  $webroots = @('.', './webroot', 'webroot', "${{ github.workspace }}\webroot", '"./webroot"', '"${{ github.workspace }}\\webroot"')
-                  $executes = @('index.cfm', 'test.cfm', 'sub/test.cfm')
-                  foreach ($w in $webroots) {
-                    foreach ($e in $executes) {
-                      Write-Host "Testing webroot=$w execute=$e"
-                      $result = ant -buildfile build.xml -Dwebroot="$w" -Dexecute="$e" -DuniqueWorkingDir=true -DluceeVersionQuery=$env:LUCEE_VERSION_QUERY 2>&1
-                      if ($LASTEXITCODE -ne 0) {
-                        $cmd = "ant -buildfile build.xml -Dwebroot=$w -Dexecute=$e -DuniqueWorkingDir=true -DluceeVersionQuery=$env:LUCEE_VERSION_QUERY"
-                        $platform = "windows-latest"
-                        $shell = "pwsh"
-                        $summary = @()
-                        $summary += "## Platform: $platform | Shell: $shell"
-                        $summary += "### $cmd"
-                        $summary += '```'
-                        $summary += "FAILED: $w / $e"
-                        $summary += $result
-                        $summary += '```'
-                        $summary -join "`n" | Out-File -Append -FilePath $env:GITHUB_STEP_SUMMARY
-                      }
-                    }
-                  }
       - uses: actions/checkout@v4
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -109,16 +84,16 @@ jobs:
         env:
           LUCEE_VERSION_QUERY: 7/all/zero
         run: |
+          luceeVersionQuery="${LUCEE_VERSION_QUERY:-7/all/zero}"
           webroots=( '.' './webroot' 'webroot' "${{ github.workspace }}/webroot" '"./webroot"' '"${{ github.workspace }}/webroot"' )
           executes=( 'index.cfm' 'test.cfm' 'sub/test.cfm' )
-          luceeVersionQuery="${LUCEE_VERSION_QUERY:-7/all/zero}"
           for w in "${webroots[@]}"; do
             for e in "${executes[@]}"; do
               echo "Testing webroot=$w execute=$e"
               result=$(ant -buildfile build.xml -Dwebroot=$w -Dexecute="$e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery="$luceeVersionQuery" 2>&1)
               if [ $? -ne 0 ]; then
                 cmd="ant -buildfile build.xml -Dwebroot=$w -Dexecute=\"$e\" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$luceeVersionQuery"
-                platform="windows-latest"
+                platform="ubuntu-latest"
                 shell="bash"
                 echo -e "## Platform: $platform | Shell: $shell\n### $cmd\n\`\`\`\nFAILED: $w / $e\n$result\n\`\`\`\n" >> "$GITHUB_STEP_SUMMARY"
               fi
@@ -126,31 +101,6 @@ jobs:
           done
         working-directory: ${{ github.workspace }}
 
-  macos-pwsh:
-    name: MacOS PowerShell
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-      - name: Run all webroot/execute combinations
-        shell: pwsh
-        run: |
-          $webroots = @('.', './webroot', 'webroot', "${{ github.workspace }}/webroot", '"./webroot"', '"${{ github.workspace }}/webroot"')
-          $executes = @('index.cfm', 'test.cfm', 'sub/test.cfm')
-          foreach ($w in $webroots) {
-            foreach ($e in $executes) {
-              Write-Host "Testing webroot=$w execute=$e"
-              $result = ant -buildfile build.xml -Dwebroot=$w -Dexecute="$e" -DuniqueWorkingDir=true 2>&1
-              if ($LASTEXITCODE -ne 0) {
-                  $cmd = "ant -buildfile build.xml -Dwebroot=$w -Dexecute='$e' -DuniqueWorkingDir=true"
-                  $platform = "macos-latest"
-                $shell = "pwsh"
-                "## Platform: $platform | Shell: $shell`n### $cmd`n```
-        working-directory: ${{ github.workspace }}
 
   windows-cmd:
     name: Windows CMD
