@@ -27,13 +27,12 @@ jobs:
           executes=( 'index.cfm' 'test.cfm' 'sub/test.cfm' )
            for w in "${webroots[@]}"; do
             for e in "${executes[@]}"; do
-              echo "Testing webroot=$w execute=$e"
-              result=$(ant -buildfile build.xml -Dwebroot=$w -Dexecute="$e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery="$luceeVersionQuery" 2>&1)
+              echo "ant -buildfile build.xml -Dwebroot=$w -Dexecute=\"$e\" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$luceeVersionQuery"
+              ant -buildfile build.xml -Dwebroot=$w -Dexecute="$e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery="$luceeVersionQuery"
               if [ $? -ne 0 ]; then
-                cmd="ant -buildfile build.xml -Dwebroot=$w -Dexecute=\"$e\" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$luceeVersionQuery"
                 platform="macos-latest"
                 shell="bash"
-                echo -e "## Platform: $platform | Shell: $shell\n### $cmd\n\`\`\`\nFAILED: $w / $e\n$result\n\`\`\`\n" >> "$GITHUB_STEP_SUMMARY"
+                echo -e "## Platform: $platform | Shell: $shell\n### ant -buildfile build.xml -Dwebroot=$w -Dexecute=\"$e\" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$luceeVersionQuery\nFAILED: $w / $e\n" >> "$GITHUB_STEP_SUMMARY"
               fi
             done
           done
@@ -59,13 +58,12 @@ jobs:
           executes=( 'index.cfm' 'test.cfm' 'sub/test.cfm' )
            for w in "${webroots[@]}"; do
             for e in "${executes[@]}"; do
-              echo "Testing webroot=$w execute=$e"
-              result=$(ant -buildfile build.xml -Dwebroot=$w -Dexecute="$e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery="$luceeVersionQuery" 2>&1)
+              echo "ant -buildfile build.xml -Dwebroot=$w -Dexecute=\"$e\" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$luceeVersionQuery"
+              ant -buildfile build.xml -Dwebroot=$w -Dexecute="$e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery="$luceeVersionQuery"
               if [ $? -ne 0 ]; then
-                cmd="ant -buildfile build.xml -Dwebroot=$w -Dexecute=\"$e\" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$luceeVersionQuery"
                 platform="ubuntu-latest"
                 shell="bash"
-                echo -e "## Platform: $platform | Shell: $shell\n### $cmd\n\`\`\`\nFAILED: $w / $e\n$result\n\`\`\`\n" >> "$GITHUB_STEP_SUMMARY"
+                echo -e "## Platform: $platform | Shell: $shell\n### ant -buildfile build.xml -Dwebroot=$w -Dexecute=\"$e\" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$luceeVersionQuery\nFAILED: $w / $e\n" >> "$GITHUB_STEP_SUMMARY"
               fi
             done
           done
@@ -91,16 +89,13 @@ jobs:
           set executes=index.cfm,test.cfm,sub/test.cfm
           for %%w in (%webroots%) do (
             for %%e in (%executes%) do (
-              echo Testing webroot=%%w execute=%%e
-              ant -buildfile build.xml -Dwebroot=%%w -Dexecute=%%e -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY% > result.txt 2>&1
+              echo ant -buildfile build.xml -Dwebroot=%%w -Dexecute=%%e -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
+              ant -buildfile build.xml -Dwebroot=%%w -Dexecute=%%e -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
               if errorlevel 1 (
                 set cmd=ant -buildfile build.xml -Dwebroot=%%w -Dexecute="%%e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
                 echo ## Platform: windows-latest ^| Shell: cmd>> %GITHUB_STEP_SUMMARY%
                 echo ### %cmd%>> %GITHUB_STEP_SUMMARY%
-                echo "```" >> %GITHUB_STEP_SUMMARY%
                 echo FAILED: %%w / %%e:>> %GITHUB_STEP_SUMMARY%
-                type result.txt >> %GITHUB_STEP_SUMMARY%
-                echo "```" >> %GITHUB_STEP_SUMMARY%
                 echo.>> %GITHUB_STEP_SUMMARY%
               )
             )
@@ -126,18 +121,11 @@ jobs:
           $executes = @('index.cfm', 'test.cfm', 'sub/test.cfm')
           foreach ($w in $webroots) {
             foreach ($e in $executes) {
-              Write-Host "Testing webroot=$w execute=$e"
               $luceeVersionQuery = $env:LUCEE_VERSION_QUERY
-              $antArgs = @(
-                '-buildfile', 'build.xml',
-                "-Dwebroot=$w",
-                "-Dexecute=$e",
-                '-DpreCleanup=false',
-                '-DpostCleanup=false',
-                "-DluceeVersionQuery=$luceeVersionQuery"
-              )
-              Write-Host "CMD: ant $($antArgs -join ' ')"
-              $result = & ant @antArgs 2>&1
+              $cmd = "ant -buildfile build.xml -Dwebroot=$w -Dexecute=$e -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$luceeVersionQuery"
+              Write-Host $cmd
+              $LASTEXITCODE = 0
+              iex $cmd
               if ($LASTEXITCODE -ne 0) {
                 $cmd = "ant -buildfile build.xml -Dwebroot=$w -Dexecute=$e -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$luceeVersionQuery"
                 $platform = "windows-latest"
@@ -145,10 +133,7 @@ jobs:
                 $summary = @()
                 $summary += "## Platform: $platform | Shell: $shell"
                 $summary += "### $cmd"
-                $summary += '```'
                 $summary += "FAILED: $w / $e"
-                $summary += $result
-                $summary += '```'
                 $summary -join "`n" | Out-File -Append -FilePath $env:GITHUB_STEP_SUMMARY
               }
             }
@@ -175,13 +160,12 @@ jobs:
           executes=( 'index.cfm' 'test.cfm' 'sub/test.cfm' )
            for w in "${webroots[@]}"; do
             for e in "${executes[@]}"; do
-              echo "Testing webroot=$w execute=$e"
-              result=$(ant -buildfile build.xml -Dwebroot=$w -Dexecute="$e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery="$luceeVersionQuery" 2>&1)
+              echo "ant -buildfile build.xml -Dwebroot=$w -Dexecute=\"$e\" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$luceeVersionQuery"
+              ant -buildfile build.xml -Dwebroot=$w -Dexecute="$e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery="$luceeVersionQuery"
               if [ $? -ne 0 ]; then
-                cmd="ant -buildfile build.xml -Dwebroot=$w -Dexecute=\"$e\" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$luceeVersionQuery"
                 platform="windows-latest"
                 shell="bash"
-                echo -e "## Platform: $platform | Shell: $shell\n### $cmd\n\`\`\`\nFAILED: $w / $e\n$result\n\`\`\`\n" >> "$GITHUB_STEP_SUMMARY"
+                echo -e "## Platform: $platform | Shell: $shell\n### ant -buildfile build.xml -Dwebroot=$w -Dexecute=\"$e\" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$luceeVersionQuery\nFAILED: $w / $e\n" >> "$GITHUB_STEP_SUMMARY"
               fi
             done
           done
