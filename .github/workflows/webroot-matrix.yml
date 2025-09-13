@@ -33,19 +33,6 @@ jobs:
   ubuntu-pwsh:
     name: Ubuntu PowerShell
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        webroot:
-          - '.'
-          - "./webroot"
-          - "webroot"
-          - ${{ github.workspace }}/webroot
-          - '"./webroot"'
-          - '"${{ github.workspace }}/webroot"'
-        execute:
-          - "index.cfm"
-          - "test.cfm"
-          - "sub/test.cfm"
     steps:
       - uses: actions/checkout@v4
       - name: Set up Java
@@ -53,10 +40,23 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
-      - name: Run Ant webroot test
+      - name: Run all webroot/execute combinations
         shell: pwsh
         run: |
-          ant -buildfile build.xml -Dwebroot=${{ matrix.webroot }} -Dexecute="${{ matrix.execute }}" -DuniqueWorkingDir=true
+          $webroots = @('.', './webroot', 'webroot', "${{ github.workspace }}/webroot", '"./webroot"', '"${{ github.workspace }}/webroot"')
+          $executes = @('index.cfm', 'test.cfm', 'sub/test.cfm')
+          foreach ($w in $webroots) {
+            foreach ($e in $executes) {
+              Write-Host "Testing webroot=$w execute=$e"
+              $result = ant -buildfile build.xml -Dwebroot=$w -Dexecute="$e" -DuniqueWorkingDir=true 2>&1
+              if ($LASTEXITCODE -ne 0) {
+                $cmd = "ant -buildfile build.xml -Dwebroot=$w -Dexecute=\"$e\" -DuniqueWorkingDir=true"
+                $platform = "ubuntu-latest"
+                $shell = "pwsh"
+                "## Platform: $platform | Shell: $shell`n### $cmd`nFAILED: $w / $e`n$result`n" | Out-File -Append -FilePath $env:GITHUB_STEP_SUMMARY
+              }
+            }
+          }
         working-directory: ${{ github.workspace }}
       - name: Check output
         shell: pwsh
@@ -67,19 +67,6 @@ jobs:
   macos-bash:
     name: MacOS Bash
     runs-on: macos-latest
-    strategy:
-      matrix:
-        webroot:
-          - '.'
-          - "./webroot"
-          - "webroot"
-          - ${{ github.workspace }}/webroot
-          - '"./webroot"'
-          - '"${{ github.workspace }}/webroot"'
-        execute:
-          - "index.cfm"
-          - "test.cfm"
-          - "sub/test.cfm"
     steps:
       - uses: actions/checkout@v4
       - name: Set up Java
@@ -87,10 +74,23 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
-      - name: Run Ant webroot test
+      - name: Run all webroot/execute combinations
         shell: bash
         run: |
-          ant -buildfile build.xml -Dwebroot=${{ matrix.webroot }} -Dexecute="${{ matrix.execute }}" -DuniqueWorkingDir=true
+          webroots=( '.' './webroot' 'webroot' "${{ github.workspace }}/webroot" '"./webroot"' '"${{ github.workspace }}/webroot"' )
+          executes=( 'index.cfm' 'test.cfm' 'sub/test.cfm' )
+          for w in "${webroots[@]}"; do
+            for e in "${executes[@]}"; do
+              echo "Testing webroot=$w execute=$e"
+              result=$(ant -buildfile build.xml -Dwebroot=$w -Dexecute="$e" -DuniqueWorkingDir=true 2>&1)
+              if [ $? -ne 0 ]; then
+                cmd="ant -buildfile build.xml -Dwebroot=$w -Dexecute=\"$e\" -DuniqueWorkingDir=true"
+                platform="macos-latest"
+                shell="bash"
+                echo -e "## Platform: $platform | Shell: $shell\n### $cmd\nFAILED: $w / $e\n$result\n" >> "$GITHUB_STEP_SUMMARY"
+              fi
+            done
+          done
         working-directory: ${{ github.workspace }}
       - name: Check output
         shell: bash
@@ -101,19 +101,6 @@ jobs:
   macos-pwsh:
     name: MacOS PowerShell
     runs-on: macos-latest
-    strategy:
-      matrix:
-        webroot:
-          - '.'
-          - "./webroot"
-          - "webroot"
-          - ${{ github.workspace }}/webroot
-          - '"./webroot"'
-          - '"${{ github.workspace }}/webroot"'
-        execute:
-          - "index.cfm"
-          - "test.cfm"
-          - "sub/test.cfm"
     steps:
       - uses: actions/checkout@v4
       - name: Set up Java
@@ -121,10 +108,23 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
-      - name: Run Ant webroot test
+      - name: Run all webroot/execute combinations
         shell: pwsh
         run: |
-          ant -buildfile build.xml -Dwebroot=${{ matrix.webroot }} -Dexecute="${{ matrix.execute }}" -DuniqueWorkingDir=true
+          $webroots = @('.', './webroot', 'webroot', "${{ github.workspace }}/webroot", '"./webroot"', '"${{ github.workspace }}/webroot"')
+          $executes = @('index.cfm', 'test.cfm', 'sub/test.cfm')
+          foreach ($w in $webroots) {
+            foreach ($e in $executes) {
+              Write-Host "Testing webroot=$w execute=$e"
+              $result = ant -buildfile build.xml -Dwebroot=$w -Dexecute="$e" -DuniqueWorkingDir=true 2>&1
+              if ($LASTEXITCODE -ne 0) {
+                $cmd = "ant -buildfile build.xml -Dwebroot=$w -Dexecute=\"$e\" -DuniqueWorkingDir=true"
+                $platform = "macos-latest"
+                $shell = "pwsh"
+                "## Platform: $platform | Shell: $shell`n### $cmd`nFAILED: $w / $e`n$result`n" | Out-File -Append -FilePath $env:GITHUB_STEP_SUMMARY
+              }
+            }
+          }
         working-directory: ${{ github.workspace }}
       - name: Check output
         shell: pwsh
@@ -135,19 +135,6 @@ jobs:
   windows-cmd:
     name: Windows CMD
     runs-on: windows-latest
-    strategy:
-      matrix:
-        webroot:
-          - '.'
-          - "./webroot"
-          - "webroot"
-          - ${{ github.workspace }}\webroot
-          - '"./webroot"'
-          - '"${{ github.workspace }}\\webroot"'
-        execute:
-          - "index.cfm"
-          - "test.cfm"
-          - "sub/test.cfm"
     steps:
       - uses: actions/checkout@v4
       - name: Set up Java
@@ -155,10 +142,25 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
-      - name: Run Ant webroot test
+      - name: Run all webroot/execute combinations
         shell: cmd
         run: |
-          ant -buildfile build.xml -Dwebroot=${{ matrix.webroot }} -Dexecute="${{ matrix.execute }}" -DuniqueWorkingDir=true
+          set webroots=.,./webroot,webroot,"${{ github.workspace }}\webroot","./webroot","${{ github.workspace }}\\webroot"
+          set executes=index.cfm,test.cfm,sub/test.cfm
+          for %w in (%webroots%) do (
+            for %e in (%executes%) do (
+              echo Testing webroot=%w execute=%e
+              ant -buildfile build.xml -Dwebroot=%w -Dexecute=%e -DuniqueWorkingDir=true > result.txt 2>&1
+              if errorlevel 1 (
+                set cmd=ant -buildfile build.xml -Dwebroot=%w -Dexecute="%e" -DuniqueWorkingDir=true
+                echo ## Platform: windows-latest ^| Shell: cmd>> %GITHUB_STEP_SUMMARY%
+                echo ### %cmd%>> %GITHUB_STEP_SUMMARY%
+                echo FAILED: %w / %e:>> %GITHUB_STEP_SUMMARY%
+                type result.txt >> %GITHUB_STEP_SUMMARY%
+                echo.>> %GITHUB_STEP_SUMMARY%
+              )
+            )
+          )
         working-directory: ${{ github.workspace }}
       - name: Check output
         shell: cmd
@@ -169,19 +171,6 @@ jobs:
   windows-pwsh:
     name: Windows PowerShell
     runs-on: windows-latest
-    strategy:
-      matrix:
-        webroot:
-          - '.'
-          - "./webroot"
-          - "webroot"
-          - ${{ github.workspace }}\webroot
-          - '"./webroot"'
-          - '"${{ github.workspace }}\\webroot"'
-        execute:
-          - "index.cfm"
-          - "test.cfm"
-          - "sub/test.cfm"
     steps:
       - uses: actions/checkout@v4
       - name: Set up Java
@@ -189,10 +178,23 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
-      - name: Run Ant webroot test
+      - name: Run all webroot/execute combinations
         shell: pwsh
         run: |
-          ant -buildfile build.xml -Dwebroot=${{ matrix.webroot }} -Dexecute="${{ matrix.execute }}" -DuniqueWorkingDir=true
+          $webroots = @('.', './webroot', 'webroot', "${{ github.workspace }}\webroot", '"./webroot"', '"${{ github.workspace }}\\webroot"')
+          $executes = @('index.cfm', 'test.cfm', 'sub/test.cfm')
+          foreach ($w in $webroots) {
+            foreach ($e in $executes) {
+              Write-Host "Testing webroot=$w execute=$e"
+              $result = ant -buildfile build.xml -Dwebroot=$w -Dexecute="$e" -DuniqueWorkingDir=true 2>&1
+              if ($LASTEXITCODE -ne 0) {
+                $cmd = "ant -buildfile build.xml -Dwebroot=$w -Dexecute=\"$e\" -DuniqueWorkingDir=true"
+                $platform = "windows-latest"
+                $shell = "pwsh"
+                "## Platform: $platform | Shell: $shell`n### $cmd`nFAILED: $w / $e`n$result`n" | Out-File -Append -FilePath $env:GITHUB_STEP_SUMMARY
+              }
+            }
+          }
         working-directory: ${{ github.workspace }}
       - name: Check output
         shell: pwsh
@@ -203,19 +205,6 @@ jobs:
   windows-bash:
     name: Windows Bash
     runs-on: windows-latest
-    strategy:
-      matrix:
-        webroot:
-          - '.'
-          - "./webroot"
-          - "webroot"
-          - ${{ github.workspace }}/webroot
-          - '"./webroot"'
-          - '"${{ github.workspace }}/webroot"'
-        execute:
-          - "index.cfm"
-          - "test.cfm"
-          - "sub/test.cfm"
     steps:
       - uses: actions/checkout@v4
       - name: Set up Java
@@ -223,10 +212,23 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
-      - name: Run Ant webroot test
+      - name: Run all webroot/execute combinations
         shell: bash
         run: |
-          ant -buildfile build.xml -Dwebroot=${{ matrix.webroot }} -Dexecute="${{ matrix.execute }}" -DuniqueWorkingDir=true
+          webroots=( '.' './webroot' 'webroot' "${{ github.workspace }}/webroot" '"./webroot"' '"${{ github.workspace }}/webroot"' )
+          executes=( 'index.cfm' 'test.cfm' 'sub/test.cfm' )
+          for w in "${webroots[@]}"; do
+            for e in "${executes[@]}"; do
+              echo "Testing webroot=$w execute=$e"
+              result=$(ant -buildfile build.xml -Dwebroot=$w -Dexecute="$e" -DuniqueWorkingDir=true 2>&1)
+              if [ $? -ne 0 ]; then
+                cmd="ant -buildfile build.xml -Dwebroot=$w -Dexecute=\"$e\" -DuniqueWorkingDir=true"
+                platform="windows-latest"
+                shell="bash"
+                echo -e "## Platform: $platform | Shell: $shell\n### $cmd\nFAILED: $w / $e\n$result\n" >> "$GITHUB_STEP_SUMMARY"
+              fi
+            done
+          done
         working-directory: ${{ github.workspace }}
       - name: Check output
         shell: bash
