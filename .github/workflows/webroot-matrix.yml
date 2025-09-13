@@ -99,9 +99,9 @@ jobs:
             for %%e in (%executes%) do (
 
               echo ant -buildfile=..\..\build.xml -Dwebroot="%%w" -Dexecute=%%e -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
-              ant -v -buildfile ..\..\build.xml -Dwebroot=%%w -Dexecute=%%e -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
+              ant -v -buildfile=..\..\build.xml -Dwebroot=%%w -Dexecute=%%e -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
               if errorlevel 1 (
-                set cmd=ant -buildfile build.xml -Dwebroot=%%w -Dexecute="%%e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
+                set cmd=ant -buildfile=build.xml -Dwebroot=%%w -Dexecute="%%e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
                 echo ## Platform: windows-latest ^| Shell: cmd>> %GITHUB_STEP_SUMMARY%
                 echo (cd): %cd%>> %GITHUB_STEP_SUMMARY%
                 echo ### %cmd%>> %GITHUB_STEP_SUMMARY%
@@ -138,7 +138,7 @@ jobs:
               $LASTEXITCODE = 0
               iex $cmd
               if ($LASTEXITCODE -ne 0) {
-                $cmd = "ant -buildfile ../../build.xml -Dwebroot=$w -Dexecute=$e -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$luceeVersionQuery"
+                $cmd = "ant -buildfile=../../build.xml -Dwebroot=$w -Dexecute=$e -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$luceeVersionQuery"
                 $platform = "windows-latest"
                 $shell = "pwsh"
                 $summary = @()
