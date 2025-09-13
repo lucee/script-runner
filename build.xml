@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project default="core" basedir="." name="Lucee"
-    xmlns:if="ant:if"
-    xmlns:unless="ant:unless"
-	xmlns:artifact="antlib:org.apache.maven.artifact.ant">
+<project default="phony" basedir="." name="Lucee-Script-runner" xmlns:if="ant:if" xmlns:unless="ant:unless" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
+	<!-- Default target for property-only invocation -->
+	<target name="phony">
+		<antcall target="core"/>
+	</target>
+	<!-- Main entry point: orchestrates the build sequence -->
+	<target name="core" depends="normalize-webroot,setEnv,use-local-jar,use-version,query-version,set-unique-working-dir,check-lucee-jar,download-lucee-jar,run-cfml"/>
 
 	<path id="maven-ant-tasks.classpath" path="ant/lib/maven-ant-tasks-2.1.3.jar" />
 	<typedef resource="org/apache/maven/artifact/ant/antlib.xml" uri="antlib:org.apache.maven.artifact.ant" classpathref="maven-ant-tasks.classpath" />
@@ -24,6 +27,13 @@
 	<!-- delete the Lucee working dir before -->
 	<property name="preCleanup" value="true"/>
 	<!-- delete the Lucee working dir afterwards -->
+	<!-- Show the value passed for webroot before normalization -->
+	<!-- Normalize webroot to absolute path early -->
+	<target name="normalize-webroot">
+	<!-- Normalize to absolute path, store in webroot.abs -->
+	<property name="webroot.abs" location="${webroot}"/>
+	<echo message="Webroot (used by Java): ${webroot.abs}"/>
+	</target>
 	<property name="postCleanup" value="true"/>
 	<!-- addtional jvm properties-->
 	<property name="jvmProperties" value=""/>
@@ -37,9 +47,7 @@
 	<property name="luceeVersionQuery" value=""/> <!-- i.e. 5.4/stable/jar -->
 	<property name="luceeJar" value=""/> <!-- full path to a local Lucee JAR file -->
 
-	<!--<target name="core" depends="setEnv,check-lucee-jar,check-lucee-lco,download-lucee-jar,download-lucee-lco,run-cfml">-->
-	<target name="core" depends="setEnv,use-local-jar,use-version,query-version,set-unique-working-dir,check-lucee-jar,download-lucee-jar,run-cfml">
-	</target>
+
 
 	<target name="setEnv">
 		<artifact:pom id="pom" file="pom.xml"/>
@@ -50,11 +58,8 @@
 		<condition property="no-query-version">
 			<length string="${luceeVersionQuery}" trim="true" length="0"/>
 		</condition>
-		<condition property="use-local-jar">
-			<not><equals arg1="${luceeJar}" arg2=""/></not>
-		</condition>
 	</target>
-	
+
 	<target name="use-local-jar" if="use-local-jar">
 		<available file="${luceeJar}" property="local.jar.exists"/>
 		<fail message="Local Lucee JAR not found: ${luceeJar}" unless="local.jar.exists"/>
@@ -76,29 +81,41 @@
 				</not>
 			</and>
 		</condition>
-		
+
 		<sequential if:true="${use.unique.dir}">
 			<!-- Check if uniqueWorkingDir is "true" (auto-generate) or a custom path -->
 			<condition property="is.auto.unique">
 				<equals arg1="${uniqueWorkingDir}" arg2="true"/>
 			</condition>
-			
+
 			<!-- Auto-generate unique directory if uniqueWorkingDir="true" -->
 			<sequential if:true="${is.auto.unique}">
 				<tstamp>
 					<format property="timestamp" pattern="yyyyMMdd-HHmmss"/>
 					<format property="randomId" pattern="SSS" offset="0" unit="millisecond"/>
 				</tstamp>
-				<property name="uniqueTempDir" location="temp-unique/lucee-${useLuceeVersion}-${timestamp}-${randomId}"/>
+				<!-- Remove 'lucee-' prefix and '.jar' suffix from useLuceeVersion for temp dir name -->
+				<basename property="luceeBaseName" file="${useLuceeVersion}" suffix=".jar"/>
+				<loadresource property="luceeVersionOnly">
+					<string value="${luceeBaseName}"/>
+					<filterchain>
+						<replaceregex pattern="^lucee-" replace=""/>
+					</filterchain>
+				</loadresource>
+				<!-- Use seconds since midnight today for timestamp -->
+				<tstamp>
+					<format property="secondsToday" pattern="ss"/>
+				</tstamp>
+				<property name="uniqueTempDir" location="temp-unique/${luceeVersionOnly}-${secondsToday}-${randomId}"/>
 				<echo message="Using auto-generated unique working directory: ${uniqueTempDir}"/>
 			</sequential>
-			
+
 			<!-- Use custom path if uniqueWorkingDir is not "true" -->
 			<sequential unless:true="${is.auto.unique}">
 				<property name="uniqueTempDir" location="${uniqueWorkingDir}"/>
 				<echo message="Using custom working directory: ${uniqueTempDir}"/>
 			</sequential>
-			
+
 			<!-- Race condition check: fail if directory already exists -->
 			<fail message="Race condition detected: Working directory ${uniqueTempDir} already exists!">
 				<condition>
@@ -117,7 +134,10 @@
 	<target name="query-version" unless="no-query-version">
 		<sequential unless:set="use-local-jar">
 			<echo message="Getting latest Lucee version for ${luceeVersionQuery}" />
-			<tempfile property="temp.file" suffix=".txt" prefix="lucee-version-query" deleteonexit="true"/>
+			<tstamp>
+				<format property="temp.timestamp" pattern="yyyyMMddHHmmssSSS"/>
+			</tstamp>
+			<property name="temp.file" value="${java.io.tmpdir}/lucee-version-query-${temp.timestamp}.txt"/>
 			<get src="${luceeUpdateProvider}${luceeVersionQuery}/filename" dest="${temp.file}" verbose="true"/>
 			<loadfile property="luceeFilename" srcFile="${temp.file}">
 				<filterchain>
@@ -129,6 +149,7 @@
 			<property name="luceeVersionUrl" value="${luceeCdnUrl}/${luceeFilename}"/>
 			<property name="useLuceeVersion" value="${luceeFilename}"/>
 			<echo message="Lucee version: ${useLuceeVersion}" />
+			<delete file="${temp.file}"/>
 		</sequential>
 	</target>
 
@@ -152,7 +173,7 @@
 		<condition property="tempDir" value="${uniqueTempDir}" else="${temp}">
 			<isset property="uniqueTempDir"/>
 		</condition>
-		
+
 		<!-- Check for Windows trailing backslash issue -->
 		<condition property="isWindows">
 			<os family="windows"/>
@@ -162,20 +183,29 @@
 				<matches pattern=".*\\$" string="${webroot}"/>
 			</condition>
 		</fail>
-		
+
 		<!-- Build proper file path for execute script validation -->
-		<condition property="execute.path.needs.separator">
-			<and>
-				<not><matches pattern=".*[/\\]$" string="${webroot}"/></not>
-				<not><matches pattern="^[/\\].*" string="${execute}"/></not>
-			</and>
+		<!-- Normalize execute path: remove any leading slashes from execute -->
+		<loadresource property="execute.nolead">
+			<propertyresource name="execute"/>
+			<filterchain>
+				<tokenfilter>
+					<replaceregex pattern="^[/\\]+" replace="" flags="g"/>
+				</tokenfilter>
+			</filterchain>
+		</loadresource>
+		<!-- If webroot ends with / or \, don't add extra separator -->
+		<condition property="webroot.ends.with.sep">
+			<matches pattern=".*[/\\]$" string="${webroot}"/>
 		</condition>
-		<condition property="execute.fullpath" value="${webroot}/${execute}" else="${webroot}${execute}">
-			<isset property="execute.path.needs.separator"/>
+		<condition property="execute.fullpath" value="${webroot}${execute.nolead}" else="${webroot}/${execute.nolead}">
+			<isset property="webroot.ends.with.sep"/>
 		</condition>
-		
-		<!-- Check if execute script exists under webroot (catch Git Bash path conversion and other issues) -->
-		<fail message="Execute script '${execute}' not found under webroot '${webroot}' (looking for: ${execute.fullpath}). If using Git Bash, try: 1) Remove leading slash: -Dexecute=&quot;test.cfm&quot; instead of &quot;/test.cfm&quot;, 2) Use cmd.exe instead of Git Bash, or 3) Ensure the script exists in the webroot.">
+
+
+
+		<!-- Improved error message with resolved paths -->
+	<fail message="Execute script not found. webroot=${webroot} script=${execute.fullpath}. Use absolute or relative paths for -Dwebroot. Both are supported.">
 			<condition>
 				<and>
 					<not>
@@ -187,10 +217,10 @@
 				</and>
 			</condition>
 		</fail>
-		
+
 		<!-- Extract basename of webroot for JFR filename -->
 		<basename property="webroot.name" file="${webroot}"/>
-		
+
 		<!-- Clean execute path (remove leading slash/backslash) for JFR filename -->
 		<loadresource property="execute.clean">
 			<propertyresource name="execute"/>
@@ -200,16 +230,17 @@
 				</tokenfilter>
 			</filterchain>
 		</loadresource>
-		
+
 		<!-- Ensure we have timestamp for JFR filename (may already be set from unique dir logic) -->
 		<tstamp unless:set="timestamp">
 			<format property="timestamp" pattern="yyyyMMdd-HHmmss"/>
 		</tstamp>
-		
+
 		<echo message="Java: ${java.version}, ${java.home}" />
 		<echo message="Lucee: ${useLuceeVersion}" />
 		<echo message="Working Dir: ${tempDir}" />
-		<echo message="Webroot: ${webroot}" />
+	<echo message="Webroot: ${webroot}" />
+	<echo message="Webroot (normalized): ${webroot.abs}" />
 		<echo message="Execute: ${execute}" />
 		<echo message="ExtensionDir: ${extensionDir}" />
 		<echo message="Extensions: ${extensions}" />
@@ -239,7 +270,7 @@
 		<condition property="lucee.jar.path" value="${luceeJar}" else="${cache}/${luceeFilename}">
 			<isset property="use-local-jar"/>
 		</condition>
-		
+
 		<java classname="org.apache.tools.ant.launch.Launcher" dir="${tempDir}/lucee" fork="true" failonerror="true" errorproperty="errorOut" resultproperty="resultOut">
 			<classpath path="${java.class.path}">
 				<pathelement location="${lucee.jar.path}"/>
@@ -249,7 +280,7 @@
 			<arg value="${basedir}/build-run-cfml.xml"/>
 			<jvmarg value="-Dlucee.base.dir=${tempDir}/lucee"/>
 			<jvmarg value="-Dlucee.web.dir=${tempDir}/lucee/web"/>
-			<jvmarg value="-Dwebroot=${webroot}"/>
+			<jvmarg value="-Dwebroot=${webroot.abs}"/>
 			<jvmarg value="-Dexecute=${execute}"/>
 			<jvmarg value="-DexecuteScriptByInclude=${executeScriptByInclude}"/>
 			<jvmarg value="-DextensionDir=${extensionDir}"/>

@@ -37,6 +37,7 @@ ant -buildfile="C:\tools\script-runner\build.xml" -Dwebroot="C:\work\myproject" 
 - `-buildfile` specifies where script-runner is installed
 - `-Dwebroot` is the directory containing your CFML code (can be relative to current directory)
 - `-Dexecute` is the CFML script to run (relative to webroot)
+- **Note:** The script-runner always normalizes the webroot to an absolute path internally, regardless of whether you pass a relative or absolute path. All output and script execution will use this normalized absolute path.
 
 ### Basic Usage
 
@@ -59,16 +60,91 @@ You can specify:
 - use a java debugger `-Ddebugger="true"` opens a java debugging port 5000, with suspend=y
 - preCleanup `-DpreCleanup="true"` purges the Lucee working dir before starting
 - postCleanup `-DpostCleanup="true"` purges the Lucee working dir after finishing
-- uniqueWorkingDir `-DuniqueWorkingDir=` supports three modes:
-  - `"false"` (default): Uses standard `temp/lucee` directory
-  - `"true"`: Auto-generates unique directory `temp-unique/lucee-{VERSION}-{TIMESTAMP}-{RANDOM}`
-  - `"/custom/path"`: Uses specified custom directory path
 
-`ant -DluceeVersion="6.2.2.91" -Dwebroot="C:\work\lucee-docs" -Dexecute="import.cfm" -Dlucee.extensions=""`
+### TL;DR: Quoting & Paths (Stop Overthinking It)
 
-`ant -DluceeVersion="6.2.2.91" -DextensionDir="C:\work\lucee-extensions\extension-hibernate\dist"`
+**If your path has spaces, use quotes. If not, don’t.**
+
+**Quick Reference:**
+
+| Shell          | Example Command                                                                                                   |
+|--------------- |------------------------------------------------------------------------------------------------------------------|
+| PowerShell     | `ant -buildfile "C:\tools\script-runner\build.xml" -Dwebroot="C:\work\my project" -Dexecute="test.cfm" -DuniqueWorkingDir=true` |
+| Command Prompt | `ant -buildfile=C:\tools\script-runner\build.xml -Dwebroot=C:\work\myproject -Dexecute=test.cfm -DuniqueWorkingDir=true`        |
+| Bash/WSL       | `ant -buildfile /mnt/d/work/script-runner/build.xml -Dwebroot=/mnt/d/work/myproject -Dexecute=test.cfm -DuniqueWorkingDir=true`     |
+
+**PowerShell:** Use double quotes for paths with spaces. Single quotes also work (especially in scripts to avoid variable expansion). Don’t mix and match.
+
+**Command Prompt:** Quotes only if the path has spaces. You can quote just the value or the whole parameter (the latter is handy in batch files).
+
+**Bash/WSL:** Use forward slashes. Quotes only if the path has spaces. Don’t use Windows backslashes or drive letters.
+
+**Blunt Warnings:**
+- Don’t use trailing backslashes on Windows. Ever.
+- Don’t escape quotes unless you like pain.
+- If Ant can’t find your file, your path or quotes are wrong. Period.
+
+---
+
+### uniqueWorkingDir: What Actually Happens
+
+- `false` (default): Uses `temp/lucee`. One run at a time. Fast, but not for parallel jobs.
+- `true`: Uses `temp-unique/{VERSION}-{TIMESTAMP}-{RANDOM}` (timestamp: `yyMMdd-HHmmss`). Lets you run as many jobs as you want, at the same time, without collisions.
+- `/custom/path`: Uses your directory. You’re on your own for cleanup and collisions.
+
+**Pro tip:** If you don’t know what you want, use `true` for CI or parallel runs, `false` for local dev.
+
+
+
+**Command Prompt (Windows):**
+
+Quotes are only needed if the path contains spaces. You can either quote just the value, or the entire parameter (both are valid). See the examples below:
+
+- **No spaces in paths (no quotes needed):**
+
+  ```cmd
+  ant -buildfile=C:\tools\script-runner\build.xml -Dwebroot=C:\work\myproject -Dexecute=test.cfm -DuniqueWorkingDir=true
+  ```
+
+- **Spaces in paths (quotes required):**
+
+  ```cmd
+  ant -buildfile="C:\tools\script-runner\build.xml" -Dwebroot="C:\work\my project" -Dexecute="test.cfm" -DuniqueWorkingDir=true
+
+  REM Or quote the entire parameter (especially useful in batch files):
+  ant "-buildfile=C:\Program Files\script-runner\build.xml" "-Dwebroot=C:\My Projects\test" -Dexecute=test.cfm
+  ```
+
+**Bash/WSL (Linux):**
+
+- Use forward slashes and Linux-style paths.
+
+Quotes are only needed if the path contains spaces. See the two examples below:
+
+- **No spaces in paths (no quotes needed):**
+
+  ```bash
+  ant -buildfile /mnt/d/work/script-runner/build.xml -Dwebroot=/mnt/d/work/myproject -Dexecute=test.cfm -DuniqueWorkingDir=true
+  ```
+
+- **Spaces in paths (quotes required):**
+
+  ```bash
+  ant -buildfile "/mnt/d/work/script-runner/build.xml" -Dwebroot="/mnt/d/work/my project" -Dexecute="test.cfm" -DuniqueWorkingDir=true
+  ```
+
+**Quick Reference Table:**
+
+| Shell          | Example Command                                                                                                   |
+|--------------- |------------------------------------------------------------------------------------------------------------------|
+| PowerShell     | `ant -buildfile "C:\tools\script-runner\build.xml" -Dwebroot="C:\work\my project" -Dexecute="test.cfm" -DuniqueWorkingDir=true` |
+| Command Prompt | `ant -buildfile=C:\tools\script-runner\build.xml -Dwebroot=C:\work\myproject -Dexecute=test.cfm -DuniqueWorkingDir=true`        |
+| Bash/WSL       | `ant -buildfile /mnt/d/work/script-runner/build.xml -Dwebroot=/mnt/d/work/myproject -Dexecute=test.cfm -DuniqueWorkingDir=true`     |
+
+---
 
 ### Quick Reference Examples
+
 
 ```bash
 # Testing Lucee Spreadsheet from its directory
@@ -88,18 +164,21 @@ ant -buildfile=D:\work\script-runner\build.xml -DuniqueWorkingDir=true -Dwebroot
 ### Working Directory Behavior
 
 **Default Mode** (`uniqueWorkingDir=false` or not specified):
+
 - Uses a consistent local `temp/lucee` directory relative to script-runner location
 - Same directory is reused across runs (cleaned with `preCleanup`/`postCleanup`)
 - **Ideal for CI/CD**: Predictable location, faster subsequent runs due to caching
 - **Single instance only**: Cannot run multiple concurrent instances
 
 **Auto-Unique Mode** (`uniqueWorkingDir=true`):
-- Creates unique directories: `temp-unique/lucee-{VERSION}-{TIMESTAMP}-{RANDOM}`
+
+- Creates unique directories: `temp-unique/{VERSION}-{TIMESTAMP}-{RANDOM}` (timestamp format: `yyMMdd-HHmmss`)
 - Each run gets its own isolated working directory
 - **Enables concurrent execution**: Multiple instances can run simultaneously
 - **Useful for**: Parallel testing, concurrent builds, isolation requirements
 
 **Custom Path Mode** (`uniqueWorkingDir=/custom/path`):
+
 - Uses your specified directory as the working directory
 - Full control over location (e.g., RAM disk, specific drive, shared folder)
 - **Race protection**: Still checks for existing directory to prevent conflicts
@@ -108,7 +187,7 @@ ant -buildfile=D:\work\script-runner\build.xml -DuniqueWorkingDir=true -Dwebroot
 ```bash
 # Examples of the three modes:
 ant -DuniqueWorkingDir=false         # Uses: temp/lucee
-ant -DuniqueWorkingDir=true          # Uses: temp-unique/lucee-6.2.2.91-20250908-090047-669
+ant -DuniqueWorkingDir=true          # Uses: temp-unique/6.2.2.91-250913-142530-123
 ant -DuniqueWorkingDir=C:/fast/work  # Uses: C:/fast/work
 ```
 
@@ -124,7 +203,7 @@ ant -DuniqueWorkingDir="true" -Dexecute="test3.cfm" &
 wait
 ```
 
-Each instance will use a unique working directory named `temp-unique/lucee-{VERSION}-{TIMESTAMP}-{RANDOM}` to prevent conflicts.
+Each instance will use a unique working directory named `temp-unique/{VERSION}-{TIMESTAMP}-{RANDOM}` (timestamp format: `yyMMdd-HHmmss`) to prevent conflicts.
 
 ## Writing Output in Headless Mode
 
@@ -142,7 +221,9 @@ writeOutput("This won't be visible");
 systemOutput(serializeJSON(myData, "struct"), true);
 ```
 
+
 **Key Points:**
+
 - `systemOutput()` writes directly to the console (stdout)
 - `writeOutput()` is for HTTP response output and won't show in headless mode
 - The second parameter `true` adds a newline after the output
@@ -155,6 +236,7 @@ systemOutput(serializeJSON(myData, "struct"), true);
 **Problem**: Build fails with path-related errors
 **Solution**: Avoid trailing backslashes in webroot paths:
 ```bash
+
 # ❌ Wrong - trailing backslash causes escape issues
 ant -Dwebroot="C:\work\myproject\"
 
@@ -165,6 +247,7 @@ ant -Dwebroot="C:/work/myproject/"  # Forward slashes work too
 
 **Problem**: "Could not locate build file" from other directories
 **Solution**: Use absolute path to build.xml:
+
 ```bash
 # ❌ Wrong - looking for build.xml in current directory
 ant -Dwebroot="." -Dexecute="/test.cfm"
@@ -175,6 +258,7 @@ ant -buildfile="C:\tools\script-runner\build.xml" -Dwebroot="." -Dexecute="test.
 
 **Problem**: "File not found" for CFML scripts
 **Solution**: Check webroot and execute paths:
+
 ```bash
 # Verify your paths - execute is relative to webroot
 ant -buildfile="/path/to/script-runner/build.xml" -Dwebroot="/your/project" -Dexecute="debug.cfm"
@@ -182,6 +266,7 @@ ant -buildfile="/path/to/script-runner/build.xml" -Dwebroot="/your/project" -Dex
 
 **Problem**: "No shell found" or quote/escape errors on Windows
 **Solution**: Use proper quote formatting for Windows command line:
+
 ```bash
 # ❌ Wrong - excessive escaping or nested quotes
 ant -buildfile=\"d:\work\script-runner\" -Dwebroot=\"D:\work\project\"
@@ -196,7 +281,9 @@ ant "-buildfile=C:\Program Files\script-runner\build.xml" "-Dwebroot=C:\My Proje
 ant -buildfile='d:\work\script-runner\build.xml' -Dwebroot='D:\work\project' -Dexecute='test.cfm'
 ```
 
+
 **Important Windows Tips:**
+
 - When using `-buildfile` with a directory, add `\build.xml` explicitly
 - Avoid escaped quotes (`\"`) - they're usually not needed
 - Use forward slashes (`/`) or double backslashes (`\\`) in scripts to avoid escape issues
@@ -212,7 +299,7 @@ If no webroot is specfied, you can run the provided debug script, to see which e
 
 To use as a GitHub Action, to run the PDF tests after building the PDF Extension, just add the following YAML
 
-```
+```yaml
     - name: Checkout Lucee
       uses: actions/checkout@v2
       with:
@@ -250,7 +337,7 @@ To use as a GitHub Action, to run the PDF tests after building the PDF Extension
         testAdditional: ${{ github.workspace }}/tests
 ```
 
-https://github.com/lucee/extension-pdf/blob/master/.github/workflows/main.yml
+[GitHub Action Workflow Example](https://github.com/lucee/extension-pdf/blob/master/.github/workflows/main.yml)
 
 This will do the following steps
 
@@ -261,7 +348,7 @@ This will do the following steps
 
 ## As a BitBucket Pipeline
 
-```
+```yaml
 image: atlassian/default-image:3
 
 pipelines:

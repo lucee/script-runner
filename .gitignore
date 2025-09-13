@@ -2,3 +2,5 @@ lucee-download-cache
 temp
 bin
 logs
+/temp-unique
+/agent-tests
