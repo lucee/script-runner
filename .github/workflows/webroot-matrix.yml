@@ -127,11 +127,9 @@ jobs:
               )
             )
           )
-
-          for %%w in ("D:\work\script-runner\tests\webroot") do (
+          for %%w in ("%GITHUB_WORKSPACE%\tests\webroot") do (
             for %%e in (index.cfm test.cfm sub/test.cfm) do (
-              echo %%w / %%e
-              ant -buildfile=..\..\build.xml "-Dwebroot=%%w" "-Dexecute=%%e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
+              ant -buildfile=..\..\build.xml -Dwebroot=%%w -Dexecute=%%e -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
               if errorlevel 1 (
                 set cmd=ant -buildfile=build.xml -Dwebroot=%%w -Dexecute=%%e -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
                 echo FAILED: %%w / %%e: !cmd!>> %GITHUB_STEP_SUMMARY%
