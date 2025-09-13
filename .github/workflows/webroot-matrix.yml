@@ -92,7 +92,7 @@ jobs:
           LUCEE_VERSION_QUERY: 7/all/zero
         working-directory: ${{ github.workspace }}/tests/webroot
         run: |
-          set webroots="." "D:\a\script-runner\script-runner\tests\webroot"
+          set webroots="."
           set executes=index.cfm test.cfm sub/test.cfm
           echo webroots=%webroots%
           echo executes=%executes%
