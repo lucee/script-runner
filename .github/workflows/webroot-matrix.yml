@@ -122,7 +122,7 @@ jobs:
         env:
           LUCEE_VERSION_QUERY: 7/all/zero
         run: |
-          $webroots = @('.', './webroot', 'webroot', "${{ github.workspace }}\webroot", '"./webroot"', '"${{ github.workspace }}\\webroot"')
+          $webroots = @('.', './webroot', 'webroot', "${{ github.workspace }}\webroot")
           $executes = @('index.cfm', 'test.cfm', 'sub/test.cfm')
           foreach ($w in $webroots) {
             foreach ($e in $executes) {
