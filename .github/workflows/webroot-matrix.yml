@@ -31,15 +31,15 @@ jobs:
       - name: Run default test (index.cfm)
         env:
           LUCEE_VERSION_QUERY: 7/all/zero
-        run: ant -Dwebroot=webroot -Dexecute=index.cfm -DluceeVersionQuery=$LUCEE_VERSION_QUERY
+        run: ant -Dwebroot=webroot -Dexecute=index.cfm -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$LUCEE_VERSION_QUERY
       - name: Run subfolder test (sub/test.cfm)
         env:
           LUCEE_VERSION_QUERY: 7/all/zero
-        run: ant -Dwebroot=webroot -Dexecute=sub/test.cfm -DluceeVersionQuery=$LUCEE_VERSION_QUERY
+        run: ant -Dwebroot=webroot -Dexecute=sub/test.cfm -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$LUCEE_VERSION_QUERY
       - name: Run test.cfm
         env:
           LUCEE_VERSION_QUERY: 7/all/zero
-        run: ant -Dwebroot=webroot -Dexecute=test.cfm -DluceeVersionQuery=$LUCEE_VERSION_QUERY
+        run: ant -Dwebroot=webroot -Dexecute=test.cfm -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$LUCEE_VERSION_QUERY
       # Add more steps for other argument combinations if needed
   ubuntu-pwsh:
     name: Ubuntu PowerShell
@@ -63,7 +63,7 @@ jobs:
               Write-Host "Testing webroot=$w execute=$e"
               $result = ant -buildfile build.xml -Dwebroot="$w" -Dexecute="$e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$env:LUCEE_VERSION_QUERY 2>&1
               if ($LASTEXITCODE -ne 0) {
-                $cmd = "ant -buildfile build.xml -Dwebroot=\"$w\" -Dexecute=\"$e\" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$env:LUCEE_VERSION_QUERY"
+                $cmd = "ant -buildfile build.xml -Dwebroot=$w -Dexecute=$e -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$env:LUCEE_VERSION_QUERY"
                 $platform = "macos-latest"
                 shell: pwsh
                 run: |
@@ -74,7 +74,7 @@ jobs:
                       Write-Host "Testing webroot=$w execute=$e"
                       $result = ant -buildfile build.xml -Dwebroot="$w" -Dexecute="$e" -DuniqueWorkingDir=true -DluceeVersionQuery=$env:LUCEE_VERSION_QUERY 2>&1
                       if ($LASTEXITCODE -ne 0) {
-                        $cmd = "ant -buildfile build.xml -Dwebroot=\"$w\" -Dexecute=\"$e\" -DuniqueWorkingDir=true -DluceeVersionQuery=$env:LUCEE_VERSION_QUERY"
+                        $cmd = "ant -buildfile build.xml -Dwebroot=$w -Dexecute=$e -DuniqueWorkingDir=true -DluceeVersionQuery=$env:LUCEE_VERSION_QUERY"
                         $platform = "windows-latest"
                         $shell = "pwsh"
                         $summary = @()
@@ -198,7 +198,7 @@ jobs:
               Write-Host "Testing webroot=$w execute=$e"
               $result = ant -buildfile build.xml -Dwebroot="$w" -Dexecute="$e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$env:LUCEE_VERSION_QUERY 2>&1
               if ($LASTEXITCODE -ne 0) {
-                $cmd = "ant -buildfile build.xml -Dwebroot=\"$w\" -Dexecute=\"$e\" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$env:LUCEE_VERSION_QUERY"
+                $cmd = "ant -buildfile build.xml -Dwebroot=$w -Dexecute=$e -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$env:LUCEE_VERSION_QUERY"
                 $platform = "windows-latest"
                 $shell = "pwsh"
                 $summary = @()
