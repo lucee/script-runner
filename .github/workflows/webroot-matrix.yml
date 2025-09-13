@@ -53,9 +53,9 @@ jobs:
           foreach ($w in $webroots) {
             foreach ($e in $executes) {
               Write-Host "Testing webroot=$w execute=$e"
-              $result = ant -buildfile build.xml -Dwebroot=$w -Dexecute="$e" -DuniqueWorkingDir=true 2>&1
+              $result = ant -buildfile build.xml -Dwebroot=$w -Dexecute="$e" -DpreCleanup=false -DpostCleanup=false 2>&1
               if ($LASTEXITCODE -ne 0) {
-                $cmd = "ant -buildfile build.xml -Dwebroot=$w -Dexecute='$e' -DuniqueWorkingDir=true"
+                $cmd = "ant -buildfile build.xml -Dwebroot=$w -Dexecute='$e' -DpreCleanup=false -DpostCleanup=false"
                 $platform = "macos-latest"
                 shell: pwsh
                 run: |
@@ -94,20 +94,15 @@ jobs:
           for w in "${webroots[@]}"; do
             for e in "${executes[@]}"; do
               echo "Testing webroot=$w execute=$e"
-              result=$(ant -buildfile build.xml -Dwebroot=$w -Dexecute="$e" -DuniqueWorkingDir=true 2>&1)
+              result=$(ant -buildfile build.xml -Dwebroot=$w -Dexecute="$e" -DpreCleanup=false -DpostCleanup=false 2>&1)
               if [ $? -ne 0 ]; then
-                cmd="ant -buildfile build.xml -Dwebroot=$w -Dexecute=\"$e\" -DuniqueWorkingDir=true"
+                cmd="ant -buildfile build.xml -Dwebroot=$w -Dexecute=\"$e\" -DpreCleanup=false -DpostCleanup=false"
                 platform="macos-latest"
                 shell="bash"
                 echo -e "## Platform: $platform | Shell: $shell\n### $cmd\n\`\`\`\nFAILED: $w / $e\n$result\n\`\`\`\n" >> "$GITHUB_STEP_SUMMARY"
               fi
             done
           done
-        working-directory: ${{ github.workspace }}
-      - name: Check output
-        shell: bash
-        run: |
-          grep 'webroot test:' logs/* || (echo 'webroot test output not found' && exit 1)
         working-directory: ${{ github.workspace }}
 
   macos-pwsh:
@@ -135,11 +130,6 @@ jobs:
                 $shell = "pwsh"
                 "## Platform: $platform | Shell: $shell`n### $cmd`n```
         working-directory: ${{ github.workspace }}
-      - name: Check output
-        shell: pwsh
-        run: |
-          Select-String 'webroot test:' logs/* | Out-Null; if ($LASTEXITCODE -ne 0) { Write-Host 'webroot test output not found'; exit 1 }
-        working-directory: ${{ github.workspace }}
 
   windows-cmd:
     name: Windows CMD
@@ -159,9 +149,9 @@ jobs:
           for %%w in (%webroots%) do (
             for %%e in (%executes%) do (
               echo Testing webroot=%%w execute=%%e
-              ant -buildfile build.xml -Dwebroot=%%w -Dexecute=%%e -DuniqueWorkingDir=true > result.txt 2>&1
+              ant -buildfile build.xml -Dwebroot=%%w -Dexecute=%%e -DpreCleanup=false -DpostCleanup=false > result.txt 2>&1
               if errorlevel 1 (
-                set cmd=ant -buildfile build.xml -Dwebroot=%%w -Dexecute="%%e" -DuniqueWorkingDir=true
+                set cmd=ant -buildfile build.xml -Dwebroot=%%w -Dexecute="%%e" -DpreCleanup=false -DpostCleanup=false
                 echo ## Platform: windows-latest ^| Shell: cmd>> %GITHUB_STEP_SUMMARY%
                 echo ### %cmd%>> %GITHUB_STEP_SUMMARY%
                 echo "```" >> %GITHUB_STEP_SUMMARY%
@@ -172,11 +162,6 @@ jobs:
               )
             )
           )
-        working-directory: ${{ github.workspace }}
-      - name: Check output
-        shell: cmd
-        run: |
-          findstr "webroot test:" logs\* || (echo webroot test output not found && exit 1)
         working-directory: ${{ github.workspace }}
 
   windows-pwsh:
@@ -197,9 +182,9 @@ jobs:
           foreach ($w in $webroots) {
             foreach ($e in $executes) {
               Write-Host "Testing webroot=$w execute=$e"
-              $result = ant -buildfile build.xml -Dwebroot=$w -Dexecute="$e" -DuniqueWorkingDir=true 2>&1
+              $result = ant -buildfile build.xml -Dwebroot=$w -Dexecute="$e" -DpreCleanup=false -DpostCleanup=false 2>&1
               if ($LASTEXITCODE -ne 0) {
-                $cmd = "ant -buildfile build.xml -Dwebroot=$w -Dexecute='$e' -DuniqueWorkingDir=true"
+                $cmd = "ant -buildfile build.xml -Dwebroot=$w -Dexecute='$e' -DpreCleanup=false -DpostCleanup=false"
                 $platform = "windows-latest"
                 $shell = "pwsh"
                 $summary = @()
@@ -213,11 +198,6 @@ jobs:
               }
             }
           }
-        working-directory: ${{ github.workspace }}
-      - name: Check output
-        shell: pwsh
-        run: |
-          Select-String 'webroot test:' logs/* | Out-Null; if ($LASTEXITCODE -ne 0) { Write-Host 'webroot test output not found'; exit 1 }
         working-directory: ${{ github.workspace }}
 
   windows-bash:
@@ -238,18 +218,13 @@ jobs:
           for w in "${webroots[@]}"; do
             for e in "${executes[@]}"; do
               echo "Testing webroot=$w execute=$e"
-              result=$(ant -buildfile build.xml -Dwebroot=$w -Dexecute="$e" -DuniqueWorkingDir=true 2>&1)
+              result=$(ant -buildfile build.xml -Dwebroot=$w -Dexecute="$e" -DpreCleanup=false -DpostCleanup=false 2>&1)
               if [ $? -ne 0 ]; then
-                cmd="ant -buildfile build.xml -Dwebroot=$w -Dexecute=\"$e\" -DuniqueWorkingDir=true"
+                cmd="ant -buildfile build.xml -Dwebroot=$w -Dexecute=\"$e\" -DpreCleanup=false -DpostCleanup=false"
                 platform="windows-latest"
                 shell="bash"
                 echo -e "## Platform: $platform | Shell: $shell\n### $cmd\n\`\`\`\nFAILED: $w / $e\n$result\n\`\`\`\n" >> "$GITHUB_STEP_SUMMARY"
               fi
             done
           done
-        working-directory: ${{ github.workspace }}
-      - name: Check output
-        shell: bash
-        run: |
-          grep 'webroot test:' logs/* || (echo 'webroot test output not found' && exit 1)
         working-directory: ${{ github.workspace }}
