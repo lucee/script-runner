@@ -30,9 +30,16 @@
 	<!-- Show the value passed for webroot before normalization -->
 	<!-- Normalize webroot to absolute path early -->
 	<target name="normalize-webroot">
-	<!-- Normalize to absolute path, store in webroot.abs -->
-	<property name="webroot.abs" location="${webroot}"/>
-	<echo message="Webroot (used by Java): ${webroot.abs}"/>
+		<!-- Normalize to absolute path, store in webroot.abs, relative to current working directory -->
+		<property environment="env"/>
+		<script language="javascript"><![CDATA[
+			var File = java.io.File;
+			var webroot = project.getProperty("webroot");
+			var cwd = project.getProperty("env.PWD") || project.getProperty("user.dir");
+			var abs = new File(webroot).isAbsolute() ? webroot : new File(cwd, webroot).getAbsolutePath();
+			project.setProperty("webroot.abs", abs);
+		]]></script>
+		<echo message="Webroot (used by Java): ${webroot.abs}"/>
 	</target>
 	<property name="postCleanup" value="true"/>
 	<!-- addtional jvm properties-->
