@@ -99,7 +99,7 @@ jobs:
             for %%e in (%executes%) do (
 
               echo ant -buildfile ..\..\build.xml -Dwebroot=%%w -Dexecute=%%e -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
-              ant -buildfile ..\..\build.xml -Dwebroot=%%w -Dexecute=%%e -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
+              ant -v -buildfile ..\..\build.xml -Dwebroot=%%w -Dexecute=%%e -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
               if errorlevel 1 (
                 set cmd=ant -buildfile build.xml -Dwebroot=%%w -Dexecute="%%e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
                 echo ## Platform: windows-latest ^| Shell: cmd>> %GITHUB_STEP_SUMMARY%
