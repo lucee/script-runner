@@ -111,13 +111,14 @@ jobs:
         run: |
           webroots=( '.' './webroot' 'webroot' "${{ github.workspace }}/webroot" '"./webroot"' '"${{ github.workspace }}/webroot"' )
           executes=( 'index.cfm' 'test.cfm' 'sub/test.cfm' )
+          luceeVersionQuery="${LUCEE_VERSION_QUERY:-7/all/zero}"
           for w in "${webroots[@]}"; do
             for e in "${executes[@]}"; do
               echo "Testing webroot=$w execute=$e"
-              result=$(ant -buildfile build.xml -Dwebroot=$w -Dexecute="$e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$LUCEE_VERSION_QUERY 2>&1)
+              result=$(ant -buildfile build.xml -Dwebroot=$w -Dexecute="$e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery="$luceeVersionQuery" 2>&1)
               if [ $? -ne 0 ]; then
-                cmd="ant -buildfile build.xml -Dwebroot=$w -Dexecute=\"$e\" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$LUCEE_VERSION_QUERY"
-                platform="macos-latest"
+                cmd="ant -buildfile build.xml -Dwebroot=$w -Dexecute=\"$e\" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$luceeVersionQuery"
+                platform="windows-latest"
                 shell="bash"
                 echo -e "## Platform: $platform | Shell: $shell\n### $cmd\n\`\`\`\nFAILED: $w / $e\n$result\n\`\`\`\n" >> "$GITHUB_STEP_SUMMARY"
               fi
