@@ -207,9 +207,19 @@ jobs:
           foreach ($w in $webroots) {
             foreach ($e in $executes) {
               Write-Host "Testing webroot=$w execute=$e"
-              $result = ant -buildfile build.xml -Dwebroot="$w" -Dexecute="$e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$env:LUCEE_VERSION_QUERY 2>&1
+              $luceeVersionQuery = $env:LUCEE_VERSION_QUERY
+              $antArgs = @(
+                '-buildfile', 'build.xml',
+                "-Dwebroot=$w",
+                "-Dexecute=$e",
+                '-DpreCleanup=false',
+                '-DpostCleanup=false',
+                "-DluceeVersionQuery=$luceeVersionQuery"
+              )
+              Write-Host "CMD: ant $($antArgs -join ' ')"
+              $result = & ant @antArgs 2>&1
               if ($LASTEXITCODE -ne 0) {
-                $cmd = "ant -buildfile build.xml -Dwebroot=$w -Dexecute=$e -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$env:LUCEE_VERSION_QUERY"
+                $cmd = "ant -buildfile build.xml -Dwebroot=$w -Dexecute=$e -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$luceeVersionQuery"
                 $platform = "windows-latest"
                 $shell = "pwsh"
                 $summary = @()
