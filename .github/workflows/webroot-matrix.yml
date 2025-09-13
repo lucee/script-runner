@@ -92,8 +92,10 @@ jobs:
           LUCEE_VERSION_QUERY: 7/all/zero
         working-directory: ${{ github.workspace }}/tests/webroot
         run: |
-          set webroots=.;D:\a\script-runner\script-runner\tests\webroot
-          set executes=index.cfm,test.cfm,sub/test.cfm
+          set webroots=.\ D:\\a\\script-runner\\script-runner\\tests\\webroot
+          set executes=index.cfm test.cfm sub/test.cfm
+          echo webroots=%webroots%
+          echo executes=%executes%
           for %%w in (%webroots%) do (
             for %%e in (%executes%) do (
               echo ant -v -buildfile=..\..\build.xml "-Dwebroot=%%w" "-Dexecute=%%e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
