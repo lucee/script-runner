@@ -202,18 +202,16 @@
 				</tokenfilter>
 			</filterchain>
 		</loadresource>
-		<!-- If webroot ends with / or \, don't add extra separator -->
-		<condition property="webroot.ends.with.sep">
-			<matches pattern=".*[/\\]$" string="${webroot}"/>
+		<!-- If webroot.abs ends with / or \, don't add extra separator -->
+		<condition property="webroot.abs.ends.with.sep">
+			<matches pattern=".*[/\\]$" string="${webroot.abs}"/>
 		</condition>
-		<condition property="execute.fullpath" value="${webroot}${execute.nolead}" else="${webroot}/${execute.nolead}">
-			<isset property="webroot.ends.with.sep"/>
+		<condition property="execute.fullpath" value="${webroot.abs}${execute.nolead}" else="${webroot.abs}/${execute.nolead}">
+			<isset property="webroot.abs.ends.with.sep"/>
 		</condition>
-
-
 
 		<!-- Improved error message with resolved paths -->
-	<fail message="Execute script not found. webroot=${webroot} script=${execute.fullpath}. Use absolute or relative paths for -Dwebroot. Both are supported.">
+		<fail message="Execute script not found. webroot=${webroot} script=${execute.fullpath}. Use absolute or relative paths for -Dwebroot. Both are supported.">
 			<condition>
 				<and>
 					<not>
@@ -247,8 +245,8 @@
 		<echo message="Java: ${java.version}, ${java.home}" />
 		<echo message="Lucee: ${useLuceeVersion}" />
 		<echo message="Working Dir: ${tempDir}" />
-	<echo message="Webroot: ${webroot}" />
-	<echo message="Webroot (normalized): ${webroot.abs}" />
+		<echo message="Webroot: ${webroot}" />
+		<echo message="Webroot (normalized): ${webroot.abs}" />
 		<echo message="Execute: ${execute}" />
 		<echo message="ExtensionDir: ${extensionDir}" />
 		<echo message="Extensions: ${extensions}" />
