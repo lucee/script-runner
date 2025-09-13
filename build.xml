@@ -32,6 +32,9 @@
 	<target name="normalize-webroot">
 			<!-- Normalize to absolute path, store in webroot.abs, relative to current working directory -->
 			<property environment="env"/>
+			<condition property="webroot.abs" value="${user.dir}">
+				<equals arg1="${webroot}" arg2="."/>
+			</condition>
 			<property name="webroot.abs" location="${webroot}"/>
 			<echo message="Webroot (used by Java): ${webroot.abs}"/>
 			<echo message="webroot.abs = ${webroot.abs}"/>
