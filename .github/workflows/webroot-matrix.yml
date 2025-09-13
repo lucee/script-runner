@@ -24,6 +24,7 @@ jobs:
         working-directory: ${{ github.workspace }}/tests/webroot
         run: |
           luceeVersionQuery="${LUCEE_VERSION_QUERY:-7/all/zero}"
+          pwd
           webroots=( '.' "${{ github.workspace }}/tests/webroot" )
           executes=( 'index.cfm' 'test.cfm' 'sub/test.cfm' )
           failed=0
@@ -35,7 +36,7 @@ jobs:
                 failed=1
                 platform="macos-latest"
                 shell="bash"
-                echo -e "## Platform: $platform | Shell: $shell\n### ant -buildfile build.xml -Dwebroot=$w -Dexecute=\"$e\" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$luceeVersionQuery\nFAILED: $w / $e\n" >> "$GITHUB_STEP_SUMMARY"
+                echo -e "## Platform: $platform | Shell: $shell\n(pwd): $(pwd)\n### ant -buildfile build.xml -Dwebroot=$w -Dexecute=\"$e\" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$luceeVersionQuery\nFAILED: $w / $e\n" >> "$GITHUB_STEP_SUMMARY"
               fi
             done
           done
@@ -57,6 +58,7 @@ jobs:
         working-directory: ${{ github.workspace }}/tests/webroot
         run: |
           luceeVersionQuery="${LUCEE_VERSION_QUERY:-7/all/zero}"
+          pwd
           webroots=( '.' "${{ github.workspace }}/tests/webroot" )
           executes=( 'index.cfm' 'test.cfm' 'sub/test.cfm' )
           failed=0
@@ -68,7 +70,7 @@ jobs:
                 failed=1
                 platform="ubuntu-latest"
                 shell="bash"
-                echo -e "## Platform: $platform | Shell: $shell\n### ant -buildfile build.xml -Dwebroot=$w -Dexecute=\"$e\" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$luceeVersionQuery\nFAILED: $w / $e\n" >> "$GITHUB_STEP_SUMMARY"
+                echo -e "## Platform: $platform | Shell: $shell\n(pwd): $(pwd)\n### ant -buildfile build.xml -Dwebroot=$w -Dexecute=\"$e\" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$luceeVersionQuery\nFAILED: $w / $e\n" >> "$GITHUB_STEP_SUMMARY"
               fi
             done
           done
@@ -91,14 +93,17 @@ jobs:
         working-directory: ${{ github.workspace }}/tests/webroot
         run: |
           set webroots=.,${{ github.workspace }}\tests\webroot
+          cd
           set executes=index.cfm,test.cfm,sub/test.cfm
           for %%w in (%webroots%) do (
             for %%e in (%executes%) do (
+
               echo ant -buildfile ..\..\build.xml -Dwebroot=%%w -Dexecute=%%e -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
               ant -buildfile ..\..\build.xml -Dwebroot=%%w -Dexecute=%%e -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
               if errorlevel 1 (
                 set cmd=ant -buildfile build.xml -Dwebroot=%%w -Dexecute="%%e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
                 echo ## Platform: windows-latest ^| Shell: cmd>> %GITHUB_STEP_SUMMARY%
+                echo (cd): %cd%>> %GITHUB_STEP_SUMMARY%
                 echo ### %cmd%>> %GITHUB_STEP_SUMMARY%
                 echo FAILED: %%w / %%e:>> %GITHUB_STEP_SUMMARY%
                 echo.>> %GITHUB_STEP_SUMMARY%
@@ -123,6 +128,7 @@ jobs:
         working-directory: ${{ github.workspace }}/tests/webroot
         run: |
           $webroots = @('.', "${{ github.workspace }}\tests\webroot")
+          pwd
           $executes = @('index.cfm', 'test.cfm', 'sub/test.cfm')
           foreach ($w in $webroots) {
             foreach ($e in $executes) {
@@ -137,6 +143,7 @@ jobs:
                 $shell = "pwsh"
                 $summary = @()
                 $summary += "## Platform: $platform | Shell: $shell"
+                $summary += "(pwd): $(pwd)"
                 $summary += "### $cmd"
                 $summary += "FAILED: $w / $e"
                 $summary -join "`n" | Out-File -Append -FilePath $env:GITHUB_STEP_SUMMARY
