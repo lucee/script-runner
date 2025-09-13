@@ -105,6 +105,9 @@ jobs:
                 echo inside if errorlevel block
                 set cmd=ant -buildfile=build.xml "-Dwebroot=%%w" "-Dexecute=%%e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
                 echo ## Platform: windows-latest ^| Shell: cmd>> %GITHUB_STEP_SUMMARY%
+                echo (cd): %cd%>> %GITHUB_STEP_SUMMARY%
+                echo ### %cmd%>> %GITHUB_STEP_SUMMARY%
+                echo FAILED: %%w / %%e:>> %GITHUB_STEP_SUMMARY%
               )
               echo after if errorlevel block
             )
