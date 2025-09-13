@@ -92,22 +92,44 @@ jobs:
           LUCEE_VERSION_QUERY: 7/all/zero
         working-directory: ${{ github.workspace }}/tests/webroot
         run: |
+          @echo off
+          echo starting full matrix test
           setlocal enabledelayedexpansion
-          for %%w in (. D:\a\script-runner\script-runner\tests\webroot) do (
+          echo before first for loop (relative)
+          for %%w in (.) do (
+            echo inside first for loop: %%w
             for %%e in (index.cfm test.cfm sub/test.cfm) do (
-              echo ant -v -buildfile=..\..\build.xml "-Dwebroot=%%w" "-Dexecute=%%e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
+              echo inside inner for loop: %%e
               ant -v -buildfile=..\..\build.xml "-Dwebroot=%%w" "-Dexecute=%%e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
               if errorlevel 1 (
+                echo inside if errorlevel block
                 set cmd=ant -buildfile=build.xml "-Dwebroot=%%w" "-Dexecute=%%e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
-                echo ## Platform: windows-latest ^| Shell: cmd>> %GITHUB_STEP_SUMMARY%
-                echo (cd): %cd%>> %GITHUB_STEP_SUMMARY%
-                echo ### %cmd%>> %GITHUB_STEP_SUMMARY%
-                echo FAILED: %%w / %%e:>> %GITHUB_STEP_SUMMARY%
-                echo.>> %GITHUB_STEP_SUMMARY%
+                echo FAILED: %%w / %%e: !cmd!>> test-failures.txt
               )
+              echo after if errorlevel block
             )
+            echo after inner for loop
           )
+          echo after first for loop
 
+          echo before second for loop (absolute)
+          for %%w in ("D:\work\script-runner\tests\webroot") do (
+            echo inside second for loop: %%w
+            for %%e in (index.cfm test.cfm sub/test.cfm) do (
+              echo inside inner for loop: %%e
+              ant -v -buildfile=..\..\build.xml "-Dwebroot=%%w" "-Dexecute=%%e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
+              if errorlevel 1 (
+                echo inside if errorlevel block
+                set cmd=ant -buildfile=build.xml "-Dwebroot=%%w" "-Dexecute=%%e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
+                echo FAILED: %%w / %%e: !cmd!>> test-failures.txt
+              )
+              echo after if errorlevel block
+            )
+            echo after inner for loop
+          )
+          echo after second for loop
+          endlocal
+          echo finished full matrix test
   windows-pwsh:
     name: Windows PowerShell
     runs-on: windows-latest
