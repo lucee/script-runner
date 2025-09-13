@@ -132,6 +132,14 @@
 	</target>
 
 	<target name="query-version" unless="no-query-version">
+		<!-- Validate luceeVersionQuery: must be string/string/string -->
+		<fail message="luceeVersionQuery must be in the format string/string/string (e.g. 7/all/zero). Got: '${luceeVersionQuery}'">
+			<condition>
+				<not>
+					<matches pattern="^[^/]+/[^/]+/[^/]+$" string="${luceeVersionQuery}"/>
+				</not>
+			</condition>
+		</fail>
 		<sequential unless:set="use-local-jar">
 			<echo message="Getting latest Lucee version for ${luceeVersionQuery}" />
 			<tstamp>
