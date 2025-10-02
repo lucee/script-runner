@@ -34,6 +34,7 @@ ant -buildfile="C:\tools\script-runner\build.xml" -Dwebroot="C:\work\myproject" 
 ```
 
 **Key Points:**
+
 - `-buildfile` specifies where script-runner is installed
 - `-Dwebroot` is the directory containing your CFML code (can be relative to current directory)
 - `-Dexecute` is the CFML script to run (relative to webroot)
@@ -45,21 +46,95 @@ Default `ant` will run the `sample/index.cfm` file
 
 ![image](https://user-images.githubusercontent.com/426404/122402355-b0dbf980-cf7d-11eb-8837-37dec47d0713.png)
 
-You can specify:
+### Parameters
 
-- Lucee version `-DluceeVersion=` default `6.2.2.91`, (ie. 6.2.2.91, light-6.2.2.91, zero-6.2.2.91 )
-- Lucee version by query `-DluceeVersionQuery="5.4/stable/light` ( optional overrides luceeVersion, (version)/(stable/rc/snapshot)/(jar,light/zero) )
-- Local Lucee JAR `-DluceeJar="/full-path/to/lucee.jar"` (optional, overrides both luceeVersion and luceeVersionQuery, perfect for testing locally built JARs)
-- Webroot `-Dwebroot=`  (default `tests/`) on Windows, avoid a trailing \ as that is treated as an escape character causes script runner to fail
-- CFML Script to run, `-Dexecute=` (default `index.cfm`) a relative path the webroot, no leading `/` is needed, some bash shells like git bash on windows get's confused and tries to expand that to a full path
-- run script via include or _internalRequest (which runs the Application.cfc if present, default ) `-DexecuteScriptByInclude="true"`
-- any extra extensions `-Dextensions=` (default ``)
-- manual extension install (`*.lex`) from a directory `-DextensionDir=` (default ``)
-- compile all cfml under webroot `-Dcompile="true"`
-- pass in a full .CFConfig.json file `-DluceeCFConfig="/path/to/.CFConfig.json`
-- use a java debugger `-Ddebugger="true"` opens a java debugging port 5000, with suspend=y
-- preCleanup `-DpreCleanup="true"` purges the Lucee working dir before starting
-- postCleanup `-DpostCleanup="true"` purges the Lucee working dir after finishing
+#### Lucee Version
+
+- `-DluceeVersion=` - Lucee version (default: `6.2.2.91`). Examples: `6.2.2.91`, `light-6.2.2.91`, `zero-6.2.2.91`
+- `-DluceeVersionQuery=` - Query-based version (optional, overrides luceeVersion). Format: `(version)/(stable/rc/snapshot)/(jar/light/zero)`. Example: `5.4/stable/light`
+- `-DluceeJar=` - Path to custom Lucee JAR (optional, overrides both luceeVersion and luceeVersionQuery). Example: `/full-path/to/lucee.jar`
+
+#### Paths and Execution
+
+- `-Dwebroot=` - Directory containing CFML code (default: `tests/`). On Windows, trailing backslashes (`\`) will be rejected with an error
+- `-Dexecute=` - CFML script to run (default: `index.cfm`). Relative to webroot, no leading `/` needed
+- `-DexecuteScriptByInclude=` - Use include instead of _internalRequest (default: false). Set to `true` to skip Application.cfc
+
+#### Extensions and Configuration
+
+- `-Dextensions=` - List of extension GUIDs to install (default: empty)
+- `-DextensionDir=` - Directory containing manual extension files (`*.lex`) to install (default: empty)
+- `-Dcompile=` - Compile all CFML under webroot (default: false). Set to `true` to enable
+- `-DluceeCFConfig=` - Path to full .CFConfig.json file for additional Lucee configuration
+
+#### Working Directory
+
+Lucee deploys to a working directory, default is `temp/`. By default it clears the directory when it starts and finishes (unless it crashes and exits!).
+
+- `-DpreCleanup=` - Clear Lucee working directory before starting (default: true). Set to `false` to preserve
+- `-DpostCleanup=` - Clear Lucee working directory after finishing (default: true). Set to `false` to preserve
+- `-DuniqueWorkingDir=` - Working directory mode:
+  - `false` (default): Uses `temp/lucee`. One run at a time. Fast, but not for parallel jobs
+  - `true`: Uses `temp-unique/{VERSION}-{TIMESTAMP}-{RANDOM}` (timestamp: `yyMMdd-HHmmss`). Enables concurrent execution
+  - `/custom/path`: Uses your specified directory. You're on your own for cleanup and collisions
+
+These options are good for inspecting after a run, or setting up the `/lucee-server/context` dir with `password.txt` or `.CFConfig.json`.
+
+#### Debugging and Profiling
+
+- `-Ddebugger=` - Enable Java debugger on port 5000 with suspend=y (default: false)
+- `-DFlightRecording=` - Enable Java Flight Recorder profiling (default: false). Saves `.jfr` files to `logs/` directory
+- `-DFlightRecordingFilename=` - Custom output path for JFR recording file
+- `-DjfrExports=` - Add JFR module exports for Lucee JFR API access (default: false)
+
+### Java Flight Recorder (JFR) Profiling
+
+Enable JFR to capture detailed performance data during script execution:
+
+- Java Flight Recorder `-DFlightRecording="true"` enables JFR profiling, saves .jfr files to `logs/` directory
+- JFR module access `-DjfrExports="true"` adds `--add-exports` and `--add-opens` for `jdk.jfr` module (for Lucee JFR API access)
+- Custom JFR filename `-DFlightRecordingFilename="/path/to/output.jfr"` specify custom output path for JFR recording
+
+```bash
+ant -DFlightRecording=true -Dwebroot="." -Dexecute="yourscript.cfm"
+```
+
+**What it does:**
+
+- Creates JFR recording files in `logs/{timestamp}-j{java.version}.jfr`
+- Captures CPU usage, memory allocation, garbage collection, thread activity
+- Settings: disk=true, dumponexit=true, maxsize=1024m, maxage=1d, settings=profile, path-to-gc-roots=true, stackdepth=128
+
+**Custom JFR output path:**
+
+```bash
+ant -DFlightRecording=true -DFlightRecordingFilename="D:/my-logs/custom.jfr" -Dwebroot="." -Dexecute="yourscript.cfm"
+```
+
+**JFR API access for Lucee:**
+
+If you need Lucee to access JFR APIs directly (not just record), add the JFR module exports:
+
+```bash
+ant -DjfrExports=true -Dwebroot="." -Dexecute="yourscript.cfm"
+```
+
+This adds `--add-exports=jdk.jfr/jdk.jfr=ALL-UNNAMED` and `--add-opens=jdk.jfr/jdk.jfr=ALL-UNNAMED` to allow Lucee code to use the JFR API.
+
+**Analyzing JFR files:**
+
+```bash
+# Print summary
+jfr print logs/250101-120530-j21.jfr
+
+# Print specific events
+jfr print --events CPULoad,GarbageCollection logs/250101-120530-j21.jfr
+
+# Convert to JSON
+jfr print --json logs/250101-120530-j21.jfr > output.json
+```
+
+The `jfr` command-line tool is included in the JDK bin directory. For visual analysis, use JDK Mission Control (JMC) or import into profiling tools.
 
 ### TL;DR: Quoting & Paths (Stop Overthinking It)
 
@@ -85,12 +160,6 @@ You can specify:
 - If Ant can’t find your file, your path or quotes are wrong. Period.
 
 ---
-
-### uniqueWorkingDir: What Actually Happens
-
-- `false` (default): Uses `temp/lucee`. One run at a time. Fast, but not for parallel jobs.
-- `true`: Uses `temp-unique/{VERSION}-{TIMESTAMP}-{RANDOM}` (timestamp: `yyMMdd-HHmmss`). Lets you run as many jobs as you want, at the same time, without collisions.
-- `/custom/path`: Uses your directory. You’re on your own for cleanup and collisions.
 
 **Pro tip:** If you don’t know what you want, use `true` for CI or parallel runs, `false` for local dev.
 
@@ -233,27 +302,16 @@ systemOutput(serializeJSON(myData, "struct"), true);
 
 ### Common Issues on Windows
 
-**Problem**: Build fails with path-related errors
-**Solution**: Avoid trailing backslashes in webroot paths:
-```bash
-
-# ❌ Wrong - trailing backslash causes escape issues
-ant -Dwebroot="C:\work\myproject\"
-
-# ✅ Correct - no trailing backslash
-ant -Dwebroot="C:\work\myproject"
-ant -Dwebroot="C:/work/myproject/"  # Forward slashes work too
-```
-
 **Problem**: "Could not locate build file" from other directories
 **Solution**: Use absolute path to build.xml:
 
 ```bash
+# ✅ Correct - specify script-runner location
+ant -buildfile="C:\tools\script-runner\build.xml" -Dwebroot="." -Dexecute="test.cfm"
+
 # ❌ Wrong - looking for build.xml in current directory
 ant -Dwebroot="." -Dexecute="/test.cfm"
 
-# ✅ Correct - specify script-runner location
-ant -buildfile="C:\tools\script-runner\build.xml" -Dwebroot="." -Dexecute="test.cfm"
 ```
 
 **Problem**: "File not found" for CFML scripts
@@ -268,9 +326,6 @@ ant -buildfile="/path/to/script-runner/build.xml" -Dwebroot="/your/project" -Dex
 **Solution**: Use proper quote formatting for Windows command line:
 
 ```bash
-# ❌ Wrong - excessive escaping or nested quotes
-ant -buildfile=\"d:\work\script-runner\" -Dwebroot=\"D:\work\project\"
-
 # ✅ Correct - Windows Command Prompt (no quotes needed for paths without spaces)
 ant -buildfile=d:\work\script-runner\build.xml -Dwebroot=D:\work\project -Dexecute=test.cfm
 
@@ -279,6 +334,10 @@ ant "-buildfile=C:\Program Files\script-runner\build.xml" "-Dwebroot=C:\My Proje
 
 # ✅ Correct - PowerShell (use single quotes to avoid variable expansion)
 ant -buildfile='d:\work\script-runner\build.xml' -Dwebroot='D:\work\project' -Dexecute='test.cfm'
+
+# ❌ Wrong - excessive escaping or nested quotes
+ant -buildfile=\"d:\work\script-runner\" -Dwebroot=\"D:\work\project\"
+
 ```
 
 

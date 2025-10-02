@@ -24,20 +24,26 @@
 	<property name="luceeCFConfig" value=""/>
 	<!-- enable java debugging -->
 	<property name="debugger" value=""/>
+	<!-- add JFR module exports/opens for JFR API access -->
+	<property name="jfrExports" value=""/>
+	<!-- enable FlightRecording -->
+	<property name="FlightRecording" value=""/>
+	<!-- custom FlightRecording filename -->
+	<property name="FlightRecordingFilename" value=""/>
 	<!-- delete the Lucee working dir before -->
 	<property name="preCleanup" value="true"/>
 	<!-- delete the Lucee working dir afterwards -->
 	<!-- Show the value passed for webroot before normalization -->
 	<!-- Normalize webroot to absolute path early -->
 	<target name="normalize-webroot">
-			<!-- Normalize to absolute path, store in webroot.abs, relative to current working directory -->
-			<property environment="env"/>
-			<condition property="webroot.abs" value="${user.dir}">
-				<equals arg1="${webroot}" arg2="."/>
-			</condition>
-			<property name="webroot.abs" location="${webroot}"/>
-			<echo message="Webroot (used by Java): ${webroot.abs}"/>
-			<echo message="webroot.abs = ${webroot.abs}"/>
+		<!-- Normalize to absolute path, store in webroot.abs, relative to current working directory -->
+		<property environment="env"/>
+		<condition property="webroot.abs" value="${user.dir}">
+			<equals arg1="${webroot}" arg2="."/>
+		</condition>
+		<property name="webroot.abs" location="${webroot}"/>
+		<echo message="Webroot (used by Java): ${webroot.abs}"/>
+		<echo message="webroot.abs = ${webroot.abs}"/>
 	</target>
 	<property name="postCleanup" value="true"/>
 	<!-- addtional jvm properties-->
@@ -62,6 +68,14 @@
 		<echo message="${luceeVersionQuery}"/>
 		<condition property="no-query-version">
 			<length string="${luceeVersionQuery}" trim="true" length="0"/>
+		</condition>
+		<condition property="use-local-jar">
+			<and>
+				<isset property="luceeJar"/>
+				<not>
+					<equals arg1="${luceeJar}" arg2=""/>
+				</not>
+			</and>
 		</condition>
 	</target>
 
@@ -101,12 +115,7 @@
 				</tstamp>
 				<!-- Remove 'lucee-' prefix and '.jar' suffix from useLuceeVersion for temp dir name -->
 				<basename property="luceeBaseName" file="${useLuceeVersion}" suffix=".jar"/>
-				<loadresource property="luceeVersionOnly">
-					<string value="${luceeBaseName}"/>
-					<filterchain>
-						<replaceregex pattern="^lucee-" replace=""/>
-					</filterchain>
-				</loadresource>
+				<property name="luceeVersionOnly" value="${luceeBaseName}"/>
 				<!-- Use seconds since midnight today for timestamp -->
 				<tstamp>
 					<format property="secondsToday" pattern="ss"/>
@@ -247,8 +256,19 @@
 			<format property="timestamp" pattern="yyyyMMdd-HHmmss"/>
 		</tstamp>
 
+		<!-- Set JFR log filename -->
+		<condition property="jfrLogname" value="${FlightRecordingFilename}" else="${basedir}/logs/${timestamp}-j${ant.java.version}.jfr">
+			<and>
+				<isset property="FlightRecordingFilename"/>
+				<not>
+					<equals arg1="${FlightRecordingFilename}" arg2=""/>
+				</not>
+			</and>
+		</condition>
+
 		<echo message="Java: ${java.version}, ${java.home}" />
 		<echo message="Lucee: ${useLuceeVersion}" />
+		<echo message="luceeJar: ${luceeJar}" />
 		<echo message="Working Dir: ${tempDir}" />
 		<echo message="Webroot: ${webroot}" />
 		<echo message="Webroot (normalized): ${webroot.abs}" />
@@ -259,6 +279,7 @@
 		<echo message="luceeCFConfig: ${luceeCFConfig}" />
 		<echo message="javaDebugger: ${debugger}" />
 		<echo message="jvmProperties: ${jvmProperties}" />
+		<echo message="JFR log: ${jfrLogname}" if:true="${FlightRecording}" />
 
 		<echo message="" />
 		<!-- execute CFML testcases -->
@@ -306,8 +327,10 @@
 			<jvmarg value="-XX:+UnlockExperimentalVMOptions" if:true="${UseEpsilonGC}"/>
 			<jvmarg value="-XX:+UseEpsilonGC" if:true="${UseEpsilonGC}"/>
 			<jvmarg value="-XX:+AlwaysPreTouch" if:true="${UseEpsilonGC}"/>
-			<jvmarg value="-XX:StartFlightRecording=disk=true,dumponexit=true,filename=${basedir}/logs/${timestamp}-lucee-${useLuceeVersion}-${webroot.name}-${execute.clean}-j${ant.java.version}.jfr,maxsize=1024m,maxage=1d,settings=profile,path-to-gc-roots=true" if:true="${FlightRecording}"/>
+			<jvmarg value="-XX:StartFlightRecording=disk=true,dumponexit=true,filename=${jfrLogname},maxsize=1024m,maxage=1d,settings=profile,path-to-gc-roots=true" if:true="${FlightRecording}"/>
 			<jvmarg value="-XX:FlightRecorderOptions=stackdepth=128" if:true="${FlightRecording}"/>
+			<jvmarg value="--add-exports=jdk.jfr/jdk.jfr=ALL-UNNAMED" if:true="${jfrExports}"/>
+			<jvmarg value="--add-opens=jdk.jfr/jdk.jfr=ALL-UNNAMED" if:true="${jfrExports}"/>
 			<jvmarg value="-XX:+PrintGCDetails" if:true="${PrintGCDetails}"/>
 			<jvmarg value="-Dproperties.filename=${jvmProperties}" if:set="jvmProperties"/>
 			<jvmarg value="-XX:+UnlockExperimentalVMOptions" />
@@ -326,6 +349,7 @@
 		</java>
 		<echo>${errorOut}</echo>
 		<delete dir="${tempDir}" if:true="${postCleanup}"/>
+		<echo message="JFR log: ${jfrLogname}" if:true="${FlightRecording}" />
 		<echo message="Finished!" />
 	</target>
 </project>
