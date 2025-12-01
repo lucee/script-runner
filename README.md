@@ -27,10 +27,10 @@ ant -Dwebroot="/path/to/your/project" -Dexecute="yourscript.cfm"
 ant -buildfile="/path/to/script-runner/build.xml" -Dwebroot="." -Dexecute="yourscript.cfm"
 
 # From any directory with absolute paths
-ant -buildfile="C:\tools\script-runner\build.xml" -Dwebroot="C:\work\myproject" -Dexecute="test.cfm"
+ant -buildfile "C:\tools\script-runner\build.xml" -Dwebroot="C:\work\myproject" -Dexecute="test.cfm"
 
 # execute a script below the webroot
-ant -buildfile="C:\tools\script-runner\build.xml" -Dwebroot="C:\work\myproject" -Dexecute="extended/index.cfm"
+ant -buildfile "C:\tools\script-runner\build.xml" -Dwebroot="C:\work\myproject" -Dexecute="extended/index.cfm"
 ```
 
 **Key Points:**
@@ -52,7 +52,7 @@ Default `ant` will run the `sample/index.cfm` file
 
 - `-DluceeVersion=` - Lucee version (default: `6.2.2.91`). Examples: `6.2.2.91`, `light-6.2.2.91`, `zero-6.2.2.91`
 - `-DluceeVersionQuery=` - Query-based version (optional, overrides luceeVersion). Format: `(version)/(stable/rc/snapshot)/(jar/light/zero)`. Example: `5.4/stable/light`
-- `-DluceeJar=` - Path to custom Lucee JAR (optional, overrides both luceeVersion and luceeVersionQuery). Example: `/full-path/to/lucee.jar`
+- `-DluceeJar=` - Path to custom Lucee JAR (optional, overrides both luceeVersion and luceeVersionQuery). Example: `/full-path/to/lucee.jar`, but make sure you use the exact filename for the jar.
 
 #### Paths and Execution
 
@@ -145,7 +145,7 @@ The `jfr` command-line tool is included in the JDK bin directory. For visual ana
 | Shell          | Example Command                                                                                                   |
 |--------------- |------------------------------------------------------------------------------------------------------------------|
 | PowerShell     | `ant -buildfile "C:\tools\script-runner\build.xml" -Dwebroot="C:\work\my project" -Dexecute="test.cfm" -DuniqueWorkingDir=true` |
-| Command Prompt | `ant -buildfile=C:\tools\script-runner\build.xml -Dwebroot=C:\work\myproject -Dexecute=test.cfm -DuniqueWorkingDir=true`        |
+| Command Prompt | `ant -buildfile "C:\tools\script-runner\build.xml" -Dwebroot="C:\work\myproject" -Dexecute="test.cfm" -DuniqueWorkingDir=true`        |
 | Bash/WSL       | `ant -buildfile /mnt/d/work/script-runner/build.xml -Dwebroot=/mnt/d/work/myproject -Dexecute=test.cfm -DuniqueWorkingDir=true`     |
 
 **PowerShell:** Use double quotes for paths with spaces. Single quotes also work (especially in scripts to avoid variable expansion). Don’t mix and match.
@@ -161,73 +161,22 @@ The `jfr` command-line tool is included in the JDK bin directory. For visual ana
 
 ---
 
-**Pro tip:** If you don’t know what you want, use `true` for CI or parallel runs, `false` for local dev.
-
-
-
-**Command Prompt (Windows):**
-
-Quotes are only needed if the path contains spaces. You can either quote just the value, or the entire parameter (both are valid). See the examples below:
-
-- **No spaces in paths (no quotes needed):**
-
-  ```cmd
-  ant -buildfile=C:\tools\script-runner\build.xml -Dwebroot=C:\work\myproject -Dexecute=test.cfm -DuniqueWorkingDir=true
-  ```
-
-- **Spaces in paths (quotes required):**
-
-  ```cmd
-  ant -buildfile="C:\tools\script-runner\build.xml" -Dwebroot="C:\work\my project" -Dexecute="test.cfm" -DuniqueWorkingDir=true
-
-  REM Or quote the entire parameter (especially useful in batch files):
-  ant "-buildfile=C:\Program Files\script-runner\build.xml" "-Dwebroot=C:\My Projects\test" -Dexecute=test.cfm
-  ```
-
-**Bash/WSL (Linux):**
-
-- Use forward slashes and Linux-style paths.
-
-Quotes are only needed if the path contains spaces. See the two examples below:
-
-- **No spaces in paths (no quotes needed):**
-
-  ```bash
-  ant -buildfile /mnt/d/work/script-runner/build.xml -Dwebroot=/mnt/d/work/myproject -Dexecute=test.cfm -DuniqueWorkingDir=true
-  ```
-
-- **Spaces in paths (quotes required):**
-
-  ```bash
-  ant -buildfile "/mnt/d/work/script-runner/build.xml" -Dwebroot="/mnt/d/work/my project" -Dexecute="test.cfm" -DuniqueWorkingDir=true
-  ```
-
-**Quick Reference Table:**
-
-| Shell          | Example Command                                                                                                   |
-|--------------- |------------------------------------------------------------------------------------------------------------------|
-| PowerShell     | `ant -buildfile "C:\tools\script-runner\build.xml" -Dwebroot="C:\work\my project" -Dexecute="test.cfm" -DuniqueWorkingDir=true` |
-| Command Prompt | `ant -buildfile=C:\tools\script-runner\build.xml -Dwebroot=C:\work\myproject -Dexecute=test.cfm -DuniqueWorkingDir=true`        |
-| Bash/WSL       | `ant -buildfile /mnt/d/work/script-runner/build.xml -Dwebroot=/mnt/d/work/myproject -Dexecute=test.cfm -DuniqueWorkingDir=true`     |
-
----
-
 ### Quick Reference Examples
 
 
 ```bash
 # Testing Lucee Spreadsheet from its directory
 cd D:\work\lucee-spreadsheet
-ant -buildfile=D:\work\script-runner\build.xml -Dwebroot=. -Dexecute=/test/index.cfm
+ant -buildfile "D:\work\script-runner\build.xml" -Dwebroot=. -Dexecute=/test/index.cfm
 
 # Testing with specific Lucee version
-ant -buildfile=D:\work\script-runner\build.xml -DluceeVersionQuery=6.2/stable/jar -Dwebroot=D:\work\lucee-spreadsheet -Dexecute=/test/index.cfm
+ant -buildfile "D:\work\script-runner\build.xml" -DluceeVersionQuery=6.2/stable/jar -Dwebroot="D:\work\lucee-spreadsheet" -Dexecute=/test/index.cfm
 
 # Testing with a locally built Lucee JAR (for Lucee developers)
-ant -buildfile=D:\work\script-runner\build.xml -DluceeJar="D:\work\lucee\loader\target\lucee.jar" -Dwebroot=D:\work\lucee-spreadsheet -Dexecute=/test/index.cfm
+ant -buildfile "D:\work\script-runner\build.xml" -DluceeJar="D:\work\lucee\loader\target\lucee.jar" -Dwebroot="D:\work\lucee-spreadsheet" -Dexecute=/test/index.cfm
 
 # With unique working directory for concurrent runs
-ant -buildfile=D:\work\script-runner\build.xml -DuniqueWorkingDir=true -Dwebroot=D:\work\lucee-spreadsheet -Dexecute=/test/index.cfm
+ant -buildfile "D:\work\script-runner\build.xml" -DuniqueWorkingDir=true -Dwebroot="D:\work\lucee-spreadsheet" -Dexecute=/test/index.cfm
 ```
 
 ### Working Directory Behavior
@@ -307,7 +256,7 @@ systemOutput(serializeJSON(myData, "struct"), true);
 
 ```bash
 # ✅ Correct - specify script-runner location
-ant -buildfile="C:\tools\script-runner\build.xml" -Dwebroot="." -Dexecute="test.cfm"
+ant -buildfile "C:\tools\script-runner\build.xml" -Dwebroot="." -Dexecute="test.cfm"
 
 # ❌ Wrong - looking for build.xml in current directory
 ant -Dwebroot="." -Dexecute="/test.cfm"
@@ -327,17 +276,16 @@ ant -buildfile="/path/to/script-runner/build.xml" -Dwebroot="/your/project" -Dex
 
 ```bash
 # ✅ Correct - Windows Command Prompt (no quotes needed for paths without spaces)
-ant -buildfile=d:\work\script-runner\build.xml -Dwebroot=D:\work\project -Dexecute=test.cfm
+ant -buildfile "d:\work\script-runner\build.xml" -Dwebroot="D:\work\project" -Dexecute="test.cfm"
 
-# ✅ Correct - Windows with spaces in paths (use quotes around entire parameter)
-ant "-buildfile=C:\Program Files\script-runner\build.xml" "-Dwebroot=C:\My Projects\test" -Dexecute=test.cfm
+# ✅ Correct - Windows with spaces in paths
+ant -buildfile "C:\Program Files\script-runner\build.xml" -Dwebroot="C:\My Projects\test" -Dexecute="test.cfm"
 
-# ✅ Correct - PowerShell (use single quotes to avoid variable expansion)
-ant -buildfile='d:\work\script-runner\build.xml' -Dwebroot='D:\work\project' -Dexecute='test.cfm'
+# ✅ Correct - PowerShell (single quotes work too, avoid variable expansion)
+ant -buildfile 'd:\work\script-runner\build.xml' -Dwebroot 'D:\work\project' -Dexecute 'test.cfm'
 
 # ❌ Wrong - excessive escaping or nested quotes
 ant -buildfile=\"d:\work\script-runner\" -Dwebroot=\"D:\work\project\"
-
 ```
 
 
@@ -350,9 +298,12 @@ ant -buildfile=\"d:\work\script-runner\" -Dwebroot=\"D:\work\project\"
 
 If no webroot is specfied, you can run the provided debug script, to see which extensions are available and all the env / sys properties
 
-`ant -buildfile="C:\work\script-runner" -Dexecute="debug.cfm"`
+```bash
+ant -buildfile "C:\work\script-runner\build.xml" -Dexecute="debug.cfm"
 
-`ant -buildfile="C:\work\script-runner" -Dexecute="debug.cfm" -DluceeVersion="light-6.2.2.91"` (`light` has no bundled extensions, `zero` has no extension or admin)
+# With light version (no bundled extensions) or zero version (no extension or admin)
+ant -buildfile "C:\work\script-runner\build.xml" -Dexecute="debug.cfm" -DluceeVersion="light-6.2.2.91"
+```
 
 ## As a GitHub Action
 

@@ -30,6 +30,8 @@
 	<property name="FlightRecording" value=""/>
 	<!-- custom FlightRecording filename -->
 	<property name="FlightRecordingFilename" value=""/>
+	<!-- custom FlightRecording settings file (default: profile) -->
+	<property name="FlightRecordingSettings" value="profile"/>
 	<!-- delete the Lucee working dir before -->
 	<property name="preCleanup" value="true"/>
 	<!-- delete the Lucee working dir afterwards -->
@@ -130,10 +132,13 @@
 				<echo message="Using custom working directory: ${uniqueTempDir}"/>
 			</sequential>
 
-			<!-- Race condition check: fail if directory already exists -->
+			<!-- Race condition check: fail if directory already exists (only when preCleanup is true) -->
 			<fail message="Race condition detected: Working directory ${uniqueTempDir} already exists!">
 				<condition>
-					<available file="${uniqueTempDir}" type="dir"/>
+					<and>
+						<istrue value="${preCleanup}"/>
+						<available file="${uniqueTempDir}" type="dir"/>
+					</and>
 				</condition>
 			</fail>
 		</sequential>
@@ -312,6 +317,7 @@
 			<arg value="${basedir}/build-run-cfml.xml"/>
 			<jvmarg value="-Dlucee.base.dir=${tempDir}/lucee"/>
 			<jvmarg value="-Dlucee.web.dir=${tempDir}/lucee/web"/>
+			<jvmarg value="-Dlucee.cli.contextRoot=${webroot.abs}"/>
 			<jvmarg value="-Dwebroot=${webroot.abs}"/>
 			<jvmarg value="-Dexecute=${execute}"/>
 			<jvmarg value="-DexecuteScriptByInclude=${executeScriptByInclude}"/>
@@ -327,13 +333,17 @@
 			<jvmarg value="-XX:+UnlockExperimentalVMOptions" if:true="${UseEpsilonGC}"/>
 			<jvmarg value="-XX:+UseEpsilonGC" if:true="${UseEpsilonGC}"/>
 			<jvmarg value="-XX:+AlwaysPreTouch" if:true="${UseEpsilonGC}"/>
-			<jvmarg value="-XX:StartFlightRecording=disk=true,dumponexit=true,filename=${jfrLogname},maxsize=1024m,maxage=1d,settings=profile,path-to-gc-roots=true" if:true="${FlightRecording}"/>
+			<jvmarg value="-XX:StartFlightRecording=disk=true,dumponexit=true,filename=${jfrLogname},maxsize=1024m,maxage=1d,settings=${FlightRecordingSettings},path-to-gc-roots=true" if:true="${FlightRecording}"/>
 			<jvmarg value="-XX:FlightRecorderOptions=stackdepth=128" if:true="${FlightRecording}"/>
 			<jvmarg value="--add-exports=jdk.jfr/jdk.jfr=ALL-UNNAMED" if:true="${jfrExports}"/>
 			<jvmarg value="--add-opens=jdk.jfr/jdk.jfr=ALL-UNNAMED" if:true="${jfrExports}"/>
 			<jvmarg value="-XX:+PrintGCDetails" if:true="${PrintGCDetails}"/>
 			<jvmarg value="-Dproperties.filename=${jvmProperties}" if:set="jvmProperties"/>
+			<jvmarg value="-XX:+UnlockDiagnosticVMOptions" if:true="${PrintInlining}"/>
+			<jvmarg value="-XX:+PrintInlining" if:true="${PrintInlining}"/>
+			<jvmarg value="-XX:+PrintCompilation" if:true="${PrintInlining}"/>
 			<jvmarg value="-XX:+UnlockExperimentalVMOptions" />
+			<jvmarg value="-XX:+HeapDumpOnOutOfMemoryError" />
 
 			<!--
 
