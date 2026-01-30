@@ -1,0 +1,126 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>org.lucee</groupId>
+	<artifactId>lucee</artifactId>
+	<version>6.2.2.91</version>
+	<packaging>jar</packaging>
+
+	<name>Lucee Loader Build</name>
+	<description>Building the Lucee Loader JAR</description>
+	<url>http://maven.lucee.org/loader/</url>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<timestamp>${maven.build.timestamp}</timestamp>
+		<maven.build.timestamp.format>yyyy/MM/dd HH:mm:ss z</maven.build.timestamp.format>
+		<maven.build.timestamp.zone>UTC</maven.build.timestamp.zone>
+		<maven.build.timestamp.locale>en,GB</maven.build.timestamp.locale>
+		<main.class>lucee.runtime.script.Main</main.class>
+	</properties>
+
+	<licenses>
+		<license>
+			<name>The GNU Lesser General Public License, Version 2.1</name>
+			<url>http://www.gnu.org/licenses/lgpl-2.1.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<id>micstriit</id>
+			<name>Michael Offner</name>
+			<email>michael@lucee.org</email>
+			<organization>Lucee Association Switzerland</organization>
+			<organizationUrl>http://lucee.org</organizationUrl>
+			<roles>
+				<role>Project-Administrator</role>
+				<role>Developer</role>
+			</roles>
+			<timezone>+1</timezone>
+		</developer>
+		<developer>
+			<id>isapir</id>
+			<name>Igal Sapir</name>
+			<email>dev@21solutions.net</email>
+			<organization>21 Solutions</organization>
+			<organizationUrl>http://21solutions.net/</organizationUrl>
+			<roles>
+				<role>Developer</role>
+			</roles>
+			<timezone>-8</timezone>
+		</developer>
+		<developer>
+			<id>zspitzer</id>
+			<name>Zac Spitzer</name>
+			<email>zac@lucee.org</email>
+			<organization>Lucee Association Switzerland</organization>
+			<organizationUrl>http://lucee.org</organizationUrl>
+			<roles>
+				<role>Developer</role>
+			</roles>
+			<timezone>-8</timezone>
+		</developer>
+	</developers>
+
+	<!-- javax dependencies for Lucee 5.x and 6.x -->
+	<dependencies>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>3.1.0</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet.jsp</groupId>
+			<artifactId>jsp-api</artifactId>
+			<version>2.2</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.el</groupId>
+			<artifactId>javax.el-api</artifactId>
+			<version>3.0.0</version>
+			<scope>compile</scope>
+		</dependency>
+	</dependencies>
+
+	<repositories>
+		<repository>
+			<id>repo</id>
+			<url>https://raw.githubusercontent.com/lucee/mvn/master/releases</url>
+		</repository>
+		<repository>
+			<id>snapi</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</repository>
+		<repository>
+			<id>res</id>
+			<url>https://oss.sonatype.org/content/repositories/releases/</url>
+		</repository>
+	</repositories>
+
+	<scm>
+		<url>https://github.com/lucee/Lucee</url>
+		<connection>scm:git:git://github.com/lucee/Lucee.git</connection>
+		<developerConnection>scm:git:git@github.com:lucee/Lucee.git</developerConnection>
+		<tag>${project.version}</tag>
+	</scm>
+
+	<distributionManagement>
+		<repository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+</project>

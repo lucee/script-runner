@@ -2,10 +2,10 @@ name: 'Lucee Script Runner'
 description: 'Run Lucee via the command line'
 inputs:
   luceeVersion:
-    description: Lucee Version to run, i.e. "light-6.2.2.91", "5.4.6.9", "zero-6.2.2.91"
+    description: Lucee Version to run, i.e. "light-7.0.1.100", "5.4.6.9", "zero-6.2.4.24" or "7.0/snapshot/jar"
     required: true
   luceeVersionQuery:
-    description: Lucee Version Query to run (overrides luceeVersion, i.e. "5.4/stable/light", "6.1/snapshot/jar", "6/stable/zero" )
+    description: Lucee Version Query to run (overrides luceeVersion, i.e. "5.4/stable/light", "7.0/snapshot/jar", "6/stable/zero" ) for backwards compat, use luceeVersion instead
     default: ""
   luceeJar:
     description: Full path to a local Lucee JAR file (overrides both luceeVersion and luceeVersionQuery)

@@ -208,7 +208,7 @@ ant -DpreCleanup=false -DpostCleanup=false -Dwebroot=. -Dexecute=test.cfm
 ```bash
 # Install extension from dist/ directory and run tests
 ant -buildfile=script-runner/build.xml \
-    -DluceeVersion="6.2.2.91" \
+    -DluceeVersion="7.0.1.100" \
     -Dwebroot="$BITBUCKET_CLONE_DIR/lucee/test" \
     -DextensionDir="$BITBUCKET_CLONE_DIR/dist" \
     -Dexecute="bootstrap-tests.cfm" \
@@ -300,5 +300,5 @@ pipelines:
           - git clone https://github.com/lucee/lucee
           - export testLabels="PDF"
           - echo $testLabels
-          - ant -buildfile script-runner/build.xml -DluceeVersion="light-6.2.2.91" -Dwebroot="$BITBUCKET_CLONE_DIR/lucee/test" -DextensionDir="$BITBUCKET_CLONE_DIR/dist" -Dexecute="bootstrap-tests.cfm" -DtestAdditional="$BITBUCKET_CLONE_DIR/tests"
+          - ant -buildfile script-runner/build.xml -DluceeVersion="light-7.0.1.100" -Dwebroot="$BITBUCKET_CLONE_DIR/lucee/test" -DextensionDir="$BITBUCKET_CLONE_DIR/dist" -Dexecute="bootstrap-tests.cfm" -DtestAdditional="$BITBUCKET_CLONE_DIR/tests"
 ```

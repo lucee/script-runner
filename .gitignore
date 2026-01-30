@@ -4,3 +4,5 @@ bin
 logs
 /temp-unique
 /agent-tests
+/.claude
+/test-output

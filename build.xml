@@ -5,7 +5,8 @@
 		<antcall target="core"/>
 	</target>
 	<!-- Main entry point: orchestrates the build sequence -->
-	<target name="core" depends="normalize-webroot,setEnv,use-local-jar,use-version,query-version,set-unique-working-dir,check-lucee-jar,download-lucee-jar,run-cfml"/>
+	<!-- Resolve version first, then detect type to pick the right pom (javax vs jakarta) -->
+	<target name="core" depends="normalize-webroot,resolve-version-input,use-local-jar,use-version,query-version,detect-version-type,setEnv,set-unique-working-dir,check-lucee-jar,download-lucee-jar,run-cfml"/>
 
 	<path id="maven-ant-tasks.classpath" path="ant/lib/maven-ant-tasks-2.1.3.jar" />
 	<typedef resource="org/apache/maven/artifact/ant/antlib.xml" uri="antlib:org.apache.maven.artifact.ant" classpathref="maven-ant-tasks.classpath" />
@@ -30,6 +31,14 @@
 	<property name="FlightRecording" value=""/>
 	<!-- custom FlightRecording filename -->
 	<property name="FlightRecordingFilename" value=""/>
+	<!-- Java agent JAR path (e.g., for profiling agents, debuggers) -->
+	<property name="javaAgent" value=""/>
+	<!-- Java agent arguments (passed after = in -javaagent:path=args) -->
+	<property name="javaAgentArgs" value=""/>
+	<!-- Enable JDWP debugging agent (required for some agents like luceedebug) -->
+	<property name="jdwp" value=""/>
+	<!-- JDWP port (default 9999) -->
+	<property name="jdwpPort" value="9999"/>
 	<!-- custom FlightRecording settings file (default: profile) -->
 	<property name="FlightRecordingSettings" value="profile"/>
 	<!-- delete the Lucee working dir before -->
@@ -48,34 +57,112 @@
 		<echo message="webroot.abs = ${webroot.abs}"/>
 	</target>
 	<property name="postCleanup" value="true"/>
-	<!-- addtional jvm properties-->
+	<!-- additional jvm properties file -->
 	<property name="jvmProperties" value=""/>
+	<!-- additional raw jvm args (e.g. "-Xmx64m -Xms32m") -->
+	<property name="jvmArgs" value=""/>
 
 	<!-- scripts can be run as an include, or via internalRequest (default) which picks up any Application.cfc -->
 	<property name="executeScriptByInclude" value=""/>
 
 	<property name="luceeCdnUrl" value="https://cdn.lucee.org"/>
 	<property name="luceeUpdateProvider" value="https://update.lucee.org/rest/update/provider/latest/"/>
-	<property name="luceeVersion" value="6.2.2.91"/>
+	<property name="luceeVersion" value="7.0.1.100"/>
 	<property name="luceeVersionQuery" value=""/> <!-- i.e. 5.4/stable/jar -->
 	<property name="luceeJar" value=""/> <!-- full path to a local Lucee JAR file -->
 
-
-
-	<target name="setEnv">
-		<artifact:pom id="pom" file="pom.xml"/>
-		<artifact:dependencies filesetId="mydeps" pomRefId="pom" />
-		<pathconvert property="dependencies" refid="mydeps"/>
-		<property name="runtime_classpath" value="${java.class.path}:${dependencies}"/>
-		<echo message="${luceeVersionQuery}"/>
-		<condition property="no-query-version">
-			<length string="${luceeVersionQuery}" trim="true" length="0"/>
+	<!-- Resolve which version input to use (luceeVersionQuery takes precedence over luceeVersion) -->
+	<target name="resolve-version-input">
+		<!-- Check if luceeVersionQuery is set (not empty) -->
+		<condition property="luceeVersionQuery.isset">
+			<and>
+				<isset property="luceeVersionQuery"/>
+				<not>
+					<equals arg1="${luceeVersionQuery}" arg2=""/>
+				</not>
+			</and>
 		</condition>
+		<!-- Set luceeVersionResolved from luceeVersionQuery if it's set, otherwise from luceeVersion -->
+		<condition property="luceeVersionResolved" value="${luceeVersionQuery}" else="${luceeVersion}">
+			<isset property="luceeVersionQuery.isset"/>
+		</condition>
+		<!-- Check if luceeVersionResolved is in version query format (string/string/string) -->
+		<condition property="use.version.query">
+			<matches pattern="^[^/]+/[^/]+/[^/]+$" string="${luceeVersionResolved}"/>
+		</condition>
+		<!-- Check if luceeJar is set for later targets -->
 		<condition property="use-local-jar">
 			<and>
 				<isset property="luceeJar"/>
 				<not>
 					<equals arg1="${luceeJar}" arg2=""/>
+				</not>
+			</and>
+		</condition>
+	</target>
+
+	<!-- Detect whether we need javax (Lucee 5/6) or jakarta (Lucee 7+) dependencies -->
+	<!-- Runs after version resolution so we only handle standard version formats -->
+	<target name="detect-version-type">
+		<!-- useLuceeVersion is already set by use-local-jar/use-version/query-version -->
+		<property name="version.for.detection" value="${useLuceeVersion}"/>
+
+		<!-- Extract major version number from version string -->
+		<!-- Handles: 7.0.0.1, lucee-7.0.jar, 7/snapshot/zero, D:/path/lucee-zero-7.0.jar -->
+		<loadresource property="version.major.extracted">
+			<propertyresource name="version.for.detection"/>
+			<filterchain>
+				<tokenfilter>
+					<!-- Extract number after last dash or slash, or at start if no dash/slash -->
+					<replaceregex pattern="^(?:.*[-/])?([0-9]+)\..*$" replace="\1" flags="s"/>
+				</tokenfilter>
+			</filterchain>
+		</loadresource>
+
+		<!-- Check if major version is 5 or 6 (use javax), otherwise use jakarta (7+) -->
+		<condition property="usesJavax">
+			<or>
+				<equals arg1="${version.major.extracted}" arg2="5"/>
+				<equals arg1="${version.major.extracted}" arg2="6"/>
+			</or>
+		</condition>
+
+		<!-- Select pom file based on version -->
+		<condition property="pom.file" value="pom-javax.xml" else="pom-jakarta.xml">
+			<isset property="usesJavax"/>
+		</condition>
+		<condition property="servlet.type" value="javax" else="jakarta">
+			<isset property="usesJavax"/>
+		</condition>
+		<echo message="Detected ${servlet.type} servlet API for Lucee ${version.major.extracted} (from: ${version.for.detection})"/>
+	</target>
+
+	<target name="setEnv" depends="detect-version-type">
+		<artifact:pom id="pom" file="${pom.file}"/>
+		<artifact:dependencies filesetId="mydeps" pomRefId="pom" />
+		<pathconvert property="dependencies" refid="mydeps"/>
+		<property name="runtime_classpath" value="${java.class.path}:${dependencies}"/>
+		<condition property="javaAgent.isset">
+			<and>
+				<isset property="javaAgent"/>
+				<not>
+					<equals arg1="${javaAgent}" arg2=""/>
+				</not>
+			</and>
+		</condition>
+		<condition property="jvmProperties.isset">
+			<and>
+				<isset property="jvmProperties"/>
+				<not>
+					<equals arg1="${jvmProperties}" arg2=""/>
+				</not>
+			</and>
+		</condition>
+		<condition property="jvmArgs.isset">
+			<and>
+				<isset property="jvmArgs"/>
+				<not>
+					<equals arg1="${jvmArgs}" arg2=""/>
 				</not>
 			</and>
 		</condition>
@@ -118,11 +205,7 @@
 				<!-- Remove 'lucee-' prefix and '.jar' suffix from useLuceeVersion for temp dir name -->
 				<basename property="luceeBaseName" file="${useLuceeVersion}" suffix=".jar"/>
 				<property name="luceeVersionOnly" value="${luceeBaseName}"/>
-				<!-- Use seconds since midnight today for timestamp -->
-				<tstamp>
-					<format property="secondsToday" pattern="ss"/>
-				</tstamp>
-				<property name="uniqueTempDir" location="temp-unique/${luceeVersionOnly}-${secondsToday}-${randomId}"/>
+				<property name="uniqueTempDir" location="temp-unique/${luceeVersionOnly}-${timestamp}-${randomId}"/>
 				<echo message="Using auto-generated unique working directory: ${uniqueTempDir}"/>
 			</sequential>
 
@@ -144,28 +227,30 @@
 		</sequential>
 	</target>
 
-	<target name="use-version" if="no-query-version" unless="use-local-jar">
-		<property name="useLuceeVersion" value="${luceeVersion}"/>
-		<property name="luceeVersionUrl" value="${luceeCdnUrl}/lucee-${useLuceeVersion}.jar"/>
-		<property name="luceeFilename" value="lucee-${useLuceeVersion}.jar"/>
+	<target name="use-version" unless="use.version.query">
+		<sequential unless:set="use-local-jar">
+			<property name="useLuceeVersion" value="${luceeVersionResolved}"/>
+			<property name="luceeVersionUrl" value="${luceeCdnUrl}/lucee-${useLuceeVersion}.jar"/>
+			<property name="luceeFilename" value="lucee-${useLuceeVersion}.jar"/>
+		</sequential>
 	</target>
 
-	<target name="query-version" unless="no-query-version">
-		<!-- Validate luceeVersionQuery: must be string/string/string -->
-		<fail message="luceeVersionQuery must be in the format string/string/string (e.g. 7/all/zero). Got: '${luceeVersionQuery}'">
+	<target name="query-version" if="use.version.query">
+		<!-- Validate version query format: must be string/string/string -->
+		<fail message="Version query must be in the format string/string/string (e.g. 7/all/zero). Got: '${luceeVersionResolved}'">
 			<condition>
 				<not>
-					<matches pattern="^[^/]+/[^/]+/[^/]+$" string="${luceeVersionQuery}"/>
+					<matches pattern="^[^/]+/[^/]+/[^/]+$" string="${luceeVersionResolved}"/>
 				</not>
 			</condition>
 		</fail>
 		<sequential unless:set="use-local-jar">
-			<echo message="Getting latest Lucee version for ${luceeVersionQuery}" />
+			<echo message="Getting latest Lucee version for ${luceeVersionResolved}" />
 			<tstamp>
 				<format property="temp.timestamp" pattern="yyyyMMddHHmmssSSS"/>
 			</tstamp>
 			<property name="temp.file" value="${java.io.tmpdir}/lucee-version-query-${temp.timestamp}.txt"/>
-			<get src="${luceeUpdateProvider}${luceeVersionQuery}/filename" dest="${temp.file}" verbose="true"/>
+			<get src="${luceeUpdateProvider}${luceeVersionResolved}/filename" dest="${temp.file}" verbose="true"/>
 			<loadfile property="luceeFilename" srcFile="${temp.file}">
 				<filterchain>
 					<tokenfilter>
@@ -283,7 +368,10 @@
 		<echo message="executeScriptByInclude: ${executeScriptByInclude}" />
 		<echo message="luceeCFConfig: ${luceeCFConfig}" />
 		<echo message="javaDebugger: ${debugger}" />
-		<echo message="jvmProperties: ${jvmProperties}" />
+		<echo message="jvmProperties: ${jvmProperties}" if:set="jvmProperties.isset" />
+		<echo message="jvmArgs: ${jvmArgs}" if:set="jvmArgs.isset" />
+		<echo message="javaAgent: ${javaAgent}" if:set="javaAgent.isset" />
+		<echo message="jdwp: ${jdwp} (port ${jdwpPort})" if:true="${jdwp}" />
 		<echo message="JFR log: ${jfrLogname}" if:true="${FlightRecording}" />
 
 		<echo message="" />
@@ -330,6 +418,10 @@
 			-->
 			<jvmarg value="-Dlucee.base.config=${luceeCFConfig}"/>
 			<jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5000" if:true="${debugger}"/>
+			<jvmarg value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=localhost:${jdwpPort}" if:true="${jdwp}"/>
+			<jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED" if:set="javaAgent.isset"/>
+			<jvmarg value="-javaagent:${javaAgent}" if:set="javaAgent.isset" unless:set="javaAgentArgs.isset"/>
+			<jvmarg value="-javaagent:${javaAgent}=${javaAgentArgs}" if:set="javaAgentArgs.isset"/>
 			<jvmarg value="-XX:+UnlockExperimentalVMOptions" if:true="${UseEpsilonGC}"/>
 			<jvmarg value="-XX:+UseEpsilonGC" if:true="${UseEpsilonGC}"/>
 			<jvmarg value="-XX:+AlwaysPreTouch" if:true="${UseEpsilonGC}"/>
@@ -338,11 +430,11 @@
 			<jvmarg value="--add-exports=jdk.jfr/jdk.jfr=ALL-UNNAMED" if:true="${jfrExports}"/>
 			<jvmarg value="--add-opens=jdk.jfr/jdk.jfr=ALL-UNNAMED" if:true="${jfrExports}"/>
 			<jvmarg value="-XX:+PrintGCDetails" if:true="${PrintGCDetails}"/>
-			<jvmarg value="-Dproperties.filename=${jvmProperties}" if:set="jvmProperties"/>
+			<jvmarg value="-Dproperties.filename=${jvmProperties}" if:set="jvmProperties.isset"/>
+			<jvmarg line="${jvmArgs}" if:set="jvmArgs.isset"/>
 			<jvmarg value="-XX:+UnlockDiagnosticVMOptions" if:true="${PrintInlining}"/>
 			<jvmarg value="-XX:+PrintInlining" if:true="${PrintInlining}"/>
 			<jvmarg value="-XX:+PrintCompilation" if:true="${PrintInlining}"/>
-			<jvmarg value="-XX:+UnlockExperimentalVMOptions" />
 			<jvmarg value="-XX:+HeapDumpOnOutOfMemoryError" />
 
 			<!--

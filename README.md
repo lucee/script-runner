@@ -37,7 +37,7 @@ ant -buildfile "C:\tools\script-runner\build.xml" -Dwebroot="C:\work\myproject" 
 
 - `-buildfile` specifies where script-runner is installed
 - `-Dwebroot` is the directory containing your CFML code (can be relative to current directory)
-- `-Dexecute` is the CFML script to run (relative to webroot)
+- `-Dexecute` is the CFML script to run (relative to webroot, no leading slash required)
 - **Note:** The script-runner always normalizes the webroot to an absolute path internally, regardless of whether you pass a relative or absolute path. All output and script execution will use this normalized absolute path.
 
 ### Basic Usage
@@ -50,9 +50,21 @@ Default `ant` will run the `sample/index.cfm` file
 
 #### Lucee Version
 
-- `-DluceeVersion=` - Lucee version (default: `6.2.2.91`). Examples: `6.2.2.91`, `light-6.2.2.91`, `zero-6.2.2.91`
-- `-DluceeVersionQuery=` - Query-based version (optional, overrides luceeVersion). Format: `(version)/(stable/rc/snapshot)/(jar/light/zero)`. Example: `5.4/stable/light`
+Version Query Format: `(version)/(stable/rc/snapshot/lpha)/(jar/light/zero)`.
+
+Examples:
+
+- `7.0/stable/light`
+- `0/stable/jar`
+- `7.0.2/snapshot/zero`
+
 - `-DluceeJar=` - Path to custom Lucee JAR (optional, overrides both luceeVersion and luceeVersionQuery). Example: `/full-path/to/lucee.jar`, but make sure you use the exact filename for the jar.
+
+- `-DluceeVersion=` - Lucee version (default: `6.2.2.91`). Examples: `6.2.2.91`, `light-6.2.2.91`, `zero-6.2.2.91` or `7.0/stable/light`
+
+**New** LuceeVersion now also handles Version Query format, `luceeVersionQuery` is still supported for backwards compat
+
+- `-DluceeVersionQuery=` - Query-based version (optional, overrides luceeVersion).
 
 #### Paths and Execution
 
@@ -85,7 +97,23 @@ These options are good for inspecting after a run, or setting up the `/lucee-ser
 - `-Ddebugger=` - Enable Java debugger on port 5000 with suspend=y (default: false)
 - `-DFlightRecording=` - Enable Java Flight Recorder profiling (default: false). Saves `.jfr` files to `logs/` directory
 - `-DFlightRecordingFilename=` - Custom output path for JFR recording file
+- `-DFlightRecordingSettings=` - JFR settings profile (default: `profile`). Options: `default`, `profile`, or path to custom `.jfc` file
 - `-DjfrExports=` - Add JFR module exports for Lucee JFR API access (default: false)
+
+#### Java Agent Support
+
+- `-DjavaAgent=` - Path to a Java agent JAR file (e.g., profilers, debuggers like luceedebug)
+- `-DjavaAgentArgs=` - Arguments passed to the agent (the part after `=` in `-javaagent:path=args`)
+- `-Djdwp=` - Enable JDWP debugging agent with suspend=n (default: false). Required for agents like luceedebug
+- `-DjdwpPort=` - JDWP port (default: 9999)
+
+#### Advanced JVM Options
+
+- `-DjvmProperties=` - Path to Java properties file to load additional JVM properties
+- `-DjvmArgs=` - Raw JVM arguments string (e.g., `"-Xmx64m -Xms32m"`)
+- `-DPrintGCDetails=` - Enable detailed garbage collection logging (default: false)
+- `-DUseEpsilonGC=` - Enable Epsilon no-op garbage collector for testing (default: false). Also enables AlwaysPreTouch
+- `-DPrintInlining=` - Enable JVM compilation diagnostics (default: false). Enables PrintInlining, PrintCompilation, and UnlockDiagnosticVMOptions
 
 ### Java Flight Recorder (JFR) Profiling
 
@@ -135,6 +163,35 @@ jfr print --json logs/250101-120530-j21.jfr > output.json
 ```
 
 The `jfr` command-line tool is included in the JDK bin directory. For visual analysis, use JDK Mission Control (JMC) or import into profiling tools.
+
+### Java Agent Example (luceedebug)
+
+To run with a Java agent like [luceedebug](https://github.com/softwareCobbler/luceedebug):
+
+```bash
+ant -buildfile "D:\work\script-runner" ^
+    -Djdwp="true" ^
+    -DjdwpPort="9999" ^
+    -DjavaAgent="D:\path\to\luceedebug-2.0.15.jar" ^
+    -DjavaAgentArgs="jdwpHost=localhost,jdwpPort=9999,debugHost=0.0.0.0,debugPort=10000,jarPath=D:\path\to\luceedebug-2.0.15.jar" ^
+    -Dwebroot="D:\my\cfml\app" ^
+    -Dexecute="index.cfm"
+```
+
+**Note:** The agent's `jarPath` argument must match the `-DjavaAgent` path exactly.
+
+To profile luceedebug overhead with JFR:
+
+```bash
+ant -buildfile "D:\work\script-runner" ^
+    -Djdwp="true" ^
+    -DjavaAgent="D:\path\to\luceedebug.jar" ^
+    -DjavaAgentArgs="jdwpHost=localhost,jdwpPort=9999,debugHost=0.0.0.0,debugPort=10000,jarPath=D:\path\to\luceedebug.jar" ^
+    -DFlightRecording="true" ^
+    -DFlightRecordingFilename="D:\output\luceedebug-profile.jfr" ^
+    -Dwebroot="." ^
+    -Dexecute="benchmark.cfm"
+```
 
 ### TL;DR: Quoting & Paths (Stop Overthinking It)
 
@@ -342,6 +399,19 @@ To use as a GitHub Action, to run the PDF tests after building the PDF Extension
         preCleanup: true (purges Lucee working directory before starting)
         postCleanup: true (purges Lucee working directory after finishing)
         uniqueWorkingDir: true (optional) uses unique working directory for concurrent execution
+        FlightRecording: true (optional) enables Java Flight Recorder profiling
+        FlightRecordingFilename: /path/to/output.jfr (optional) custom JFR output path
+        FlightRecordingSettings: profile (optional) JFR settings profile (default/profile/custom.jfc)
+        jfrExports: true (optional) adds JFR module exports for Lucee JFR API access
+        javaAgent: /path/to/agent.jar (optional) Java agent JAR path
+        javaAgentArgs: agent=args (optional) Java agent arguments
+        jdwp: true (optional) enables JDWP debugging agent (suspend=n)
+        jdwpPort: 9999 (optional) JDWP port (default: 9999)
+        jvmProperties: /path/to/jvm.properties (optional) Java properties file path
+        jvmArgs: "-Xmx64m -Xms32m" (optional) raw JVM arguments
+        PrintGCDetails: true (optional) enables detailed GC logging
+        UseEpsilonGC: true (optional) enables Epsilon no-op garbage collector
+        PrintInlining: true (optional) enables JVM compilation diagnostics
       env:
         testLabels: pdf
         testAdditional: ${{ github.workspace }}/tests
