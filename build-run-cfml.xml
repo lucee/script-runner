@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project default="all" basedir="." name="run-cfml">
+
+	<!-- Protection: This file should only be called from build.xml -->
+	<fail message="ERROR: build-run-cfml.xml should not be run directly! Use build.xml instead.">
+		<condition>
+			<not>
+				<isset property="lucee.base.dir"/>
+			</not>
+		</condition>
+	</fail>
+
 	<macrodef name="echots">
 		<attribute name="message"/>
 		<sequential>
@@ -165,10 +175,16 @@
 						if ( executeScriptByInclude eq "true"){
 							include template="#execute#";
 						} else {
-							_internalRequest(
+							result = _internalRequest(
 								template = execute,
 								url = passedVariables
-							 ); // using internal request runs the Application.cfc, pass any simple variables in as URLs
+							); // using internal request runs the Application.cfc, pass any simple variables in as URLs
+
+							if (result.status_code != 200){
+								failedRequest = "Error: Script threw [#result.status_code#], expected [200], possible request timeout? see LDEV-6086";
+								systemOuput( failedRequest, true, true);
+								throw "Error: Script threw [#result.status_code#], expected [200], possible request timeout? see LDEV-6086";
+							}
 						}
 					} catch (e){
 						request.errorThrown = true;

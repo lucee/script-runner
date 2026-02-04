@@ -1,3 +1,8 @@
 lucee-download-cache
 temp
 bin
+logs
+/temp-unique
+/agent-tests
+/.claude
+/test-output

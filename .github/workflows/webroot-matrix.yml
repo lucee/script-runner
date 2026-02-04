@@ -1,0 +1,228 @@
+name: Webroot Handling Matrix
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  macos-bash:
+    name: MacOS Bash
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Run all webroot/execute combinations
+        shell: bash
+        env:
+          LUCEE_VERSION_QUERY: 7/all/zero
+        working-directory: ${{ github.workspace }}/tests/webroot
+        run: |
+          luceeVersionQuery="${LUCEE_VERSION_QUERY:-7/all/zero}"
+          pwd
+          webroots=( '.' "${{ github.workspace }}/tests/webroot" )
+          executes=( 'index.cfm' 'test.cfm' 'sub/test.cfm' )
+          failed=0
+          for w in "${webroots[@]}"; do
+            for e in "${executes[@]}"; do
+              echo "ant -buildfile ../../build.xml -Dwebroot=$w -Dexecute=\"$e\" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$luceeVersionQuery"
+              ant -buildfile ../../build.xml -Dwebroot=$w -Dexecute="$e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery="$luceeVersionQuery"
+              if [ $? -ne 0 ]; then
+                failed=1
+                platform="macos-latest"
+                shell="bash"
+                echo -e "## Platform: $platform | Shell: $shell\n(pwd): $(pwd)\n### ant -buildfile build.xml -Dwebroot=$w -Dexecute=\"$e\" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$luceeVersionQuery\nFAILED: $w / $e\n" >> "$GITHUB_STEP_SUMMARY"
+              fi
+            done
+          done
+          exit $failed
+  ubuntu-bash:
+    name: Ubuntu Bash
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Run all webroot/execute combinations
+        shell: bash
+        env:
+          LUCEE_VERSION_QUERY: 7/all/zero
+        working-directory: ${{ github.workspace }}/tests/webroot
+        run: |
+          luceeVersionQuery="${LUCEE_VERSION_QUERY:-7/all/zero}"
+          pwd
+          webroots=( '.' "${{ github.workspace }}/tests/webroot" )
+          executes=( 'index.cfm' 'test.cfm' 'sub/test.cfm' )
+          failed=0
+          for w in "${webroots[@]}"; do
+            for e in "${executes[@]}"; do
+              echo "ant -buildfile ../../build.xml -Dwebroot=$w -Dexecute=\"$e\" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$luceeVersionQuery"
+              ant -buildfile ../../build.xml -Dwebroot=$w -Dexecute="$e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery="$luceeVersionQuery"
+              if [ $? -ne 0 ]; then
+                failed=1
+                platform="ubuntu-latest"
+                shell="bash"
+                echo -e "## Platform: $platform | Shell: $shell\n(pwd): $(pwd)\n### ant -buildfile build.xml -Dwebroot=$w -Dexecute=\"$e\" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$luceeVersionQuery\nFAILED: $w / $e\n" >> "$GITHUB_STEP_SUMMARY"
+              fi
+            done
+          done
+          exit $failed
+
+  windows-cmd:
+    name: Windows CMD
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Run all webroot/execute combinations
+        shell: cmd
+        env:
+          LUCEE_VERSION_QUERY: 7/all/zero
+        working-directory: ${{ github.workspace }}/tests/webroot
+        run: |
+          @echo off
+          setlocal enabledelayedexpansion
+          for %%w in (.) do (
+            for %%e in (index.cfm test.cfm sub\test.cfm) do (
+              echo %%w / %%e
+              ant -buildfile=..\..\build.xml "-Dwebroot=%%w" "-Dexecute=%%e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
+              if errorlevel 1 (
+                set cmd=ant -buildfile=build.xml -Dwebroot=%%w -Dexecute=%%e -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
+                echo FAILED: %%w / %%e: !cmd!>> %GITHUB_STEP_SUMMARY%
+                echo(>> %GITHUB_STEP_SUMMARY%
+                exit /b 1
+              )
+            )
+          )
+          for %%w in ("%GITHUB_WORKSPACE%\tests\webroot") do (
+            for %%e in (index.cfm test.cfm sub/test.cfm) do (
+              ant -buildfile=..\..\build.xml -Dwebroot=%%w -Dexecute=%%e -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
+              if errorlevel 1 (
+                set cmd=ant -buildfile=build.xml -Dwebroot=%%w -Dexecute=%%e -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=%LUCEE_VERSION_QUERY%
+                echo FAILED: %%w / %%e: !cmd!>> %GITHUB_STEP_SUMMARY%
+                echo(>> %GITHUB_STEP_SUMMARY%
+                exit /b 1
+              )
+            )
+          )
+
+          endlocal
+  windows-pwsh:
+    name: Windows PowerShell
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Run all webroot/execute combinations
+        shell: pwsh
+        env:
+          LUCEE_VERSION_QUERY: 7/all/zero
+        working-directory: ${{ github.workspace }}/tests/webroot
+        run: |
+          $webroots = @('.', "${{ github.workspace }}\tests\webroot")
+          pwd
+          $executes = @('index.cfm', 'test.cfm', 'sub/test.cfm')
+          foreach ($w in $webroots) {
+            foreach ($e in $executes) {
+              $luceeVersionQuery = $env:LUCEE_VERSION_QUERY
+              $cmd = "ant -buildfile=../../build.xml `"-Dwebroot=$w`" `"-Dexecute=$e`" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$luceeVersionQuery"
+              Write-Host $cmd
+              $LASTEXITCODE = 0
+              iex $cmd
+              if ($LASTEXITCODE -ne 0) {
+                $cmd = "ant -buildfile=../../build.xml `"-Dwebroot=$w`" `"-Dexecute=$e`" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$luceeVersionQuery"
+                $platform = "windows-latest"
+                $shell = "pwsh"
+                $summary = @()
+                $summary += "## Platform: $platform | Shell: $shell"
+                $summary += "(pwd): $(pwd)"
+                $summary += "### $cmd"
+                $summary += "FAILED: $w / $e"
+                $summary -join "`n" | Out-File -Append -FilePath $env:GITHUB_STEP_SUMMARY
+              }
+            }
+          }
+  windows-bash:
+    name: Windows Bash
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Run all webroot/execute combinations
+        shell: bash
+        env:
+          LUCEE_VERSION_QUERY: 7/all/zero
+        working-directory: ${{ github.workspace }}/tests/webroot
+        run: |
+          luceeVersionQuery="${LUCEE_VERSION_QUERY:-7/all/zero}"
+          webroots=( '.' "${{ github.workspace }}/tests/webroot" )
+          executes=( 'index.cfm' 'test.cfm' 'sub/test.cfm' )
+          failed=0
+          for w in "${webroots[@]}"; do
+            for e in "${executes[@]}"; do
+              echo "ant -buildfile ../../build.xml -Dwebroot=$w -Dexecute=\"$e\" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$luceeVersionQuery"
+              ant -buildfile ../../build.xml -Dwebroot=$w -Dexecute="$e" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery="$luceeVersionQuery"
+              if [ $? -ne 0 ]; then
+                failed=1
+                platform="windows-latest"
+                shell="bash"
+                echo -e "## Platform: $platform | Shell: $shell\n### ant -buildfile build.xml -Dwebroot=$w -Dexecute=\"$e\" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$luceeVersionQuery\nFAILED: $w / $e\n" >> "$GITHUB_STEP_SUMMARY"
+              fi
+            done
+          done
+          exit $failed

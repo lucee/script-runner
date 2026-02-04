@@ -68,6 +68,7 @@
 		</developer>
 	</developers>
 
+	<!-- javax dependencies for Lucee 5.x and 6.x -->
 	<dependencies>
 		<dependency>
 			<groupId>javax.servlet</groupId>
@@ -86,12 +87,6 @@
 			<artifactId>javax.el-api</artifactId>
 			<version>3.0.0</version>
 			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>jakarta.platform</groupId>
-			<artifactId>jakarta.jakartaee-api</artifactId>
-			<version>10.0.0</version>
-			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
