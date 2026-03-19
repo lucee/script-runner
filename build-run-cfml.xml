@@ -182,7 +182,7 @@
 
 							if (result.status_code != 200){
 								failedRequest = "Error: Script threw [#result.status_code#], expected [200], possible request timeout? see LDEV-6086";
-								systemOuput( failedRequest, true, true);
+								systemOutput( failedRequest, true, true);
 								throw "Error: Script threw [#result.status_code#], expected [200], possible request timeout? see LDEV-6086";
 							}
 						}
