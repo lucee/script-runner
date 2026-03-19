@@ -181,9 +181,11 @@
 							); // using internal request runs the Application.cfc, pass any simple variables in as URLs
 
 							if (result.status_code != 200){
-								failedRequest = "Error: Script threw [#result.status_code#], expected [200], possible request timeout? see LDEV-6086";
-								systemOutput( failedRequest, true, true);
-								throw "Error: Script threw [#result.status_code#], expected [200], possible request timeout? see LDEV-6086";
+								if ( structKeyExists( result, "error" ) )
+									systemOutput( result.error, true );
+								else if ( structKeyExists( result, "filecontent" ) )
+									systemOutput( result.filecontent, true );
+								throw( message = "Error: Script threw [#result.status_code#], expected [200], possible request timeout? see LDEV-6086", type = "expression" );
 							}
 						}
 					} catch (e){
