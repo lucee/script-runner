@@ -74,7 +74,7 @@ Examples:
 
 #### Extensions and Configuration
 
-- `-Dextensions=` - List of extension GUIDs to install (default: empty)
+- `-Dextensions=` - List of extensions to install (default: empty). Accepts GUIDs (all versions) or Maven GAV coordinates on Lucee 7.0+ (e.g. `org.lucee:hibernate-extension:5.6.15.12-SNAPSHOT`)
 - `-DextensionDir=` - Directory containing manual extension files (`*.lex`) to install (default: empty)
 - `-Dcompile=` - Compile all CFML under webroot (default: false). Set to `true` to enable
 - `-DluceeCFConfig=` - Path to full .CFConfig.json file for additional Lucee configuration
@@ -390,7 +390,7 @@ To use as a GitHub Action, to run the PDF tests after building the PDF Extension
         luceeVersion: ${{ env.luceeVersion }}
         luceeVersionQuery: 5.4/stable/light (optional, overrides luceeVersion )
         luceeJar: /path/to/local/lucee.jar (optional, overrides both luceeVersion and luceeVersionQuery)
-        extensions: (optional list of extension guids to install)
+        extensions: (optional list of extension GUIDs or Maven GAV coordinates to install)
         extensionDir: ${{ github.workspace }}/dist (for testing building an extension with CI)
         antFlags: -d or -v etc (optional, good for debugging any ant issues)
         compile: true (optional, compiles all the cfml under the webroot)
