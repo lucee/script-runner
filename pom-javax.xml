@@ -91,6 +91,11 @@
 	</dependencies>
 
 	<repositories>
+		<!-- maven-ant-tasks 2.1.3 defaults "central" to http://repo1.maven.org/maven2, which now answers 301 (LDEV-6568); override it with https -->
+		<repository>
+			<id>central</id>
+			<url>https://repo1.maven.org/maven2</url>
+		</repository>
 		<repository>
 			<id>repo</id>
 			<url>https://raw.githubusercontent.com/lucee/mvn/master/releases</url>
