@@ -36,11 +36,16 @@ jobs:
           path: ~/.m2
           key: lucee-script-runner-maven-cache
 
-      - name: Cache Lucee files
+      # jar names include the full version, so a new snapshot is a new key, saved once
+      - name: Resolve Lucee jar
+        id: lucee
+        run: echo "jar=$(curl -sf https://update.lucee.org/rest/update/provider/latest/${{ matrix.lucee }}/filename | tr -d '"')" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Lucee jar ${{ steps.lucee.outputs.jar }}
         uses: actions/cache@v6
         with:
-          path: ~/work/script-runner/script-runner/lucee-download-cache/
-          key: lucee-downloads
+          path: lucee-download-cache/${{ steps.lucee.outputs.jar }}
+          key: lucee-jar-${{ steps.lucee.outputs.jar }}
 
       - name: Run debug.cfm, passing variables
         run: ant -DluceeVersionQuery="${{ matrix.lucee }}" -Dexecute="/debug.cfm" -Dtruth="cfml rocks" -Dauthor="Zac Spitzer"
@@ -84,11 +89,12 @@ jobs:
           path: ~/.m2
           key: lucee-script-runner-maven-cache
 
+      # pinned versions only, so a fixed key is fine
       - name: Cache Lucee files
         uses: actions/cache@v6
         with:
-          path: ~/work/script-runner/script-runner/lucee-download-cache/
-          key: lucee-downloads
+          path: lucee-download-cache/
+          key: lucee-downloads-variants
 
       - name: Run default
         run: ant
