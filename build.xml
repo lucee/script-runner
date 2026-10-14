@@ -166,6 +166,23 @@
 				</not>
 			</and>
 		</condition>
+		<!-- since 7.0 (LDEV-5425) an empty sysprop counts as set and hides the LUCEE_EXTENSIONS / LUCEE_BASE_CONFIG env vars, so only pass them when set -->
+		<condition property="extensions.isset">
+			<and>
+				<isset property="extensions"/>
+				<not>
+					<equals arg1="${extensions}" arg2=""/>
+				</not>
+			</and>
+		</condition>
+		<condition property="luceeCFConfig.isset">
+			<and>
+				<isset property="luceeCFConfig"/>
+				<not>
+					<equals arg1="${luceeCFConfig}" arg2=""/>
+				</not>
+			</and>
+		</condition>
 	</target>
 
 	<target name="use-local-jar" if="use-local-jar">
@@ -410,13 +427,13 @@
 			<jvmarg value="-Dexecute=${execute}"/>
 			<jvmarg value="-DexecuteScriptByInclude=${executeScriptByInclude}"/>
 			<jvmarg value="-DextensionDir=${extensionDir}"/>
-			<jvmarg value="-Dlucee.extensions=${extensions}"/>
+			<jvmarg value="-Dlucee.extensions=${extensions}" if:set="extensions.isset"/>
 			<jvmarg value="-Dlucee.mapping.first=true"/>
 			<jvmarg value="-Dcompile=${compile}"/>
 			<!--
 			<jvmarg value="-Dlucee.cli.printExceptions=true"/>
 			-->
-			<jvmarg value="-Dlucee.base.config=${luceeCFConfig}"/>
+			<jvmarg value="-Dlucee.base.config=${luceeCFConfig}" if:set="luceeCFConfig.isset"/>
 			<jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5000" if:true="${debugger}"/>
 			<jvmarg value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=localhost:${jdwpPort}" if:true="${jdwp}"/>
 			<jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED" if:set="javaAgent.isset"/>
