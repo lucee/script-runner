@@ -413,7 +413,7 @@
 			<isset property="use-local-jar"/>
 		</condition>
 
-		<java classname="org.apache.tools.ant.launch.Launcher" dir="${tempDir}/lucee" fork="true" failonerror="true" errorproperty="errorOut" resultproperty="resultOut">
+		<java classname="org.apache.tools.ant.launch.Launcher" dir="${tempDir}/lucee" fork="true" failonerror="true">
 			<classpath path="${java.class.path}">
 				<pathelement location="${lucee.jar.path}"/>
 				<pathelement path="${runtime_classpath}"/>
@@ -466,7 +466,6 @@
 			<jvmarg value="-Dhttp.proxyPort=8188"/>
 			-->
 		</java>
-		<echo>${errorOut}</echo>
 		<delete dir="${tempDir}" if:true="${postCleanup}"/>
 		<echo message="JFR log: ${jfrLogname}" if:true="${FlightRecording}" />
 		<echo message="Finished!" />
