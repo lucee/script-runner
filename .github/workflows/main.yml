@@ -22,22 +22,22 @@ jobs:
           - { lucee: 8.0/snapshot/jar, java: 21 }
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up Java ${{ matrix.java }}
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: ${{ matrix.java }}
 
       - name: Cache Maven packages
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.m2
           key: lucee-script-runner-maven-cache
 
       - name: Cache Lucee files
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/work/script-runner/script-runner/lucee-download-cache/
           key: lucee-downloads
@@ -76,16 +76,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Cache Maven packages
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.m2
           key: lucee-script-runner-maven-cache
 
       - name: Cache Lucee files
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/work/script-runner/script-runner/lucee-download-cache/
           key: lucee-downloads
