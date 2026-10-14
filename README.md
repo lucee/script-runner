@@ -141,7 +141,7 @@ ant -Dwebroot="D:\work\myproject" -Dexecute="index.cfm" -Dcompile=true
 ant -Dwebroot="./sampleBad" -Dexecute="index.cfm" -Dcompile=true
 ```
 
-The script-runner's own CI runs both a clean webroot and the `sampleBad/` fixture (deliberately broken CFML), see `.github/workflows/main.yml`. The `sampleBad` step is `continue-on-error`, so it shows the error output but doesn't assert the failure.
+The script-runner's own CI compiles a clean webroot, and `tests/compile-mixed/` (a good `index.cfm` plus broken files under `sub/`) on every Lucee version in its matrix, asserting that both errors are reported and the run fails without executing `index.cfm`. See `.github/workflows/main.yml`.
 
 **When not to use it:**
 
