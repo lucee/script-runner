@@ -76,7 +76,7 @@ Examples:
 
 - `-Dextensions=` - List of extensions to install (default: empty). Accepts GUIDs (all versions) or Maven GAV coordinates on Lucee 7.0+ (e.g. `org.lucee:hibernate-extension:5.6.15.12-SNAPSHOT`)
 - `-DextensionDir=` - Directory containing manual extension files (`*.lex`) to install (default: empty)
-- `-Dcompile=` - Compile all CFML under webroot (default: false). Set to `true` to enable
+- `-Dcompile=` - Compile all CFML under webroot before executing the script (default: false). See [Compile Option](#compile-option) below
 - `-DluceeCFConfig=` - Path to full .CFConfig.json file for additional Lucee configuration
 
 #### Working Directory
@@ -114,6 +114,39 @@ These options are good for inspecting after a run, or setting up the `/lucee-ser
 - `-DPrintGCDetails=` - Enable detailed garbage collection logging (default: false)
 - `-DUseEpsilonGC=` - Enable Epsilon no-op garbage collector for testing (default: false). Also enables AlwaysPreTouch
 - `-DPrintInlining=` - Enable JVM compilation diagnostics (default: false). Enables PrintInlining, PrintCompilation, and UnlockDiagnosticVMOptions
+
+### Compile Option
+
+`-Dcompile=true` compiles every CFML file under the webroot **before** the main `-Dexecute` script runs. Internally it invokes the Lucee admin `compileMapping` action against the web mapping `/` with `stoponerror="false"`.
+
+**What it's for:**
+
+- **CI syntax check** — catches parse errors in files your test script doesn't touch. Without `-Dcompile`, a typo in a rarely-hit CFC only surfaces when that code path runs.
+- **Pre-warm the class cache** — every `.cfm`/`.cfc` gets compiled to bytecode up front, so first-hit request latency isn't paying compile cost.
+- **Smoke-test a codebase** against a new Lucee version without wiring up real tests.
+
+**Behaviour:**
+
+- Compiles everything reachable from the webroot's `/` mapping (recursive).
+- `stoponerror="false"` — compilation carries on past a bad file, so every error is collected. If there were any, they are all reported together (`Compilation failed with N error(s)`, with file and line for each) and the run fails before `-Dexecute` runs. Any compile error means a non-zero exit code, even if the `-Dexecute` script itself is fine.
+- Runs once, before `-Dexecute`. Doesn't recompile if files change mid-run (script-runner is one-shot anyway).
+
+**Examples:**
+
+```bash
+# Compile + run index.cfm
+ant -Dwebroot="D:\work\myproject" -Dexecute="index.cfm" -Dcompile=true
+
+# compile a known-bad codebase: lists the compile errors, then fails without running index.cfm
+ant -Dwebroot="./sampleBad" -Dexecute="index.cfm" -Dcompile=true
+```
+
+The script-runner's own CI compiles a clean webroot, and `tests/compile-mixed/` (a good `index.cfm` plus broken files under `sub/`) on every Lucee version in its matrix, asserting that both errors are reported and the run fails without executing `index.cfm`. See `.github/workflows/main.yml`.
+
+**When not to use it:**
+
+- Iterating locally on a single script — adds startup cost for no benefit.
+- Webroots with large amounts of unrelated CFML (e.g. a full app when you only want to run one test) — you'll pay the full compile cost.
 
 ### Java Flight Recorder (JFR) Profiling
 

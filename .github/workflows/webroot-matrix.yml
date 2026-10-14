@@ -1,7 +1,5 @@
 name: Webroot Handling Matrix
 on:
-  push:
-  pull_request:
   workflow_dispatch:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -11,16 +9,16 @@ jobs:
     name: MacOS Bash
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Cache Maven packages
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
       - name: Set up Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: 'temurin'
           java-version: '21'
@@ -52,16 +50,16 @@ jobs:
     name: Ubuntu Bash
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Cache Maven packages
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
       - name: Set up Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: 'temurin'
           java-version: '21'
@@ -94,16 +92,16 @@ jobs:
     name: Windows CMD
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Cache Maven packages
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
       - name: Set up Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: 'temurin'
           java-version: '21'
@@ -144,16 +142,16 @@ jobs:
     name: Windows PowerShell
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Cache Maven packages
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
       - name: Set up Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: 'temurin'
           java-version: '21'
@@ -166,6 +164,7 @@ jobs:
           $webroots = @('.', "${{ github.workspace }}\tests\webroot")
           pwd
           $executes = @('index.cfm', 'test.cfm', 'sub/test.cfm')
+          $failed = $false
           foreach ($w in $webroots) {
             foreach ($e in $executes) {
               $luceeVersionQuery = $env:LUCEE_VERSION_QUERY
@@ -174,7 +173,8 @@ jobs:
               $LASTEXITCODE = 0
               iex $cmd
               if ($LASTEXITCODE -ne 0) {
-                $cmd = "ant -buildfile=../../build.xml `"-Dwebroot=$w`" `"-Dexecute=$e`" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$luceeVersionQuery"
+                $failed = $true
+                $cmd ="ant -buildfile=../../build.xml `"-Dwebroot=$w`" `"-Dexecute=$e`" -DpreCleanup=false -DpostCleanup=false -DluceeVersionQuery=$luceeVersionQuery"
                 $platform = "windows-latest"
                 $shell = "pwsh"
                 $summary = @()
@@ -186,20 +186,21 @@ jobs:
               }
             }
           }
+          if ($failed) { exit 1 }
   windows-bash:
     name: Windows Bash
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Cache Maven packages
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
       - name: Set up Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: 'temurin'
           java-version: '21'
