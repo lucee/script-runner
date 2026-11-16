@@ -294,8 +294,38 @@
 	<target name="download-lucee-jar" unless="lucee.jar.present">
 		<sequential unless:set="use-local-jar">
 			<mkdir dir="${cache}"/>
-			<get src="${luceeVersionUrl}" dest="${cache}/${luceeFilename}" verbose="true"/>
+
+			<!-- the Lucee 9 pre-releases are not on the CDN (LDEV-6708), only on the Lucee Maven repository, so for Lucee 9 and newer a missing CDN file is looked for there -->
+			<condition property="lucee.maven.fallback">
+				<matches pattern="^lucee-(light-|zero-)?([9]|[1-9][0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+.*\.jar$" string="${luceeFilename}"/>
+			</condition>
+			<get src="${luceeVersionUrl}" dest="${cache}/${luceeFilename}" verbose="true" ignoreerrors="true" if:set="lucee.maven.fallback"/>
+			<get src="${luceeVersionUrl}" dest="${cache}/${luceeFilename}" verbose="true" unless:set="lucee.maven.fallback"/>
+
+			<available file="${cache}/${luceeFilename}" property="lucee.cdn.downloaded"/>
+			<antcall target="download-lucee-jar-maven" if:set="lucee.maven.fallback"/>
 		</sequential>
+	</target>
+
+	<target name="download-lucee-jar-maven" unless="lucee.cdn.downloaded">
+		<loadresource property="lucee.maven.version">
+			<propertyresource name="luceeFilename"/>
+			<filterchain>
+				<tokenfilter>
+					<replaceregex pattern="^lucee-(light-|zero-)?(.*)\.jar$" replace="\2"/>
+				</tokenfilter>
+			</filterchain>
+		</loadresource>
+		<condition property="lucee.maven.variant" value="-light">
+			<matches pattern="^lucee-light-.*" string="${luceeFilename}"/>
+		</condition>
+		<condition property="lucee.maven.variant" value="-zero">
+			<matches pattern="^lucee-zero-.*" string="${luceeFilename}"/>
+		</condition>
+		<property name="lucee.maven.variant" value=""/>
+		<property name="luceeMavenUrl" value="https://maven.lucee-services.com"/>
+		<echo message="${luceeVersionUrl} is not available, getting it from ${luceeMavenUrl}"/>
+		<get src="${luceeMavenUrl}/org/lucee/lucee/${lucee.maven.version}/lucee-${lucee.maven.version}${lucee.maven.variant}.jar" dest="${cache}/${luceeFilename}" verbose="true"/>
 	</target>
 
 	<target name="run-cfml">
